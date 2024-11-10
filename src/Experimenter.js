@@ -14,14 +14,16 @@ function Experimenter() {
   const [countdown, setCountdown] = useState(maxTime);
   const [currentProblem, setCurrentProblem] = useState(null); // New state to store the current problem
   const [currentBlock, setCurrentBlock] = useState(null); // New state to store the current block
-  const countdownAudioRef = useRef(new Audio("/sounds/countdown.mp3")); // Reference to the countdown audio file
-  const mousePositionRef = useRef({ x: 0, y: 0 });
   const [showModal, setShowModal] = useState(false);
   const [pointsAwarded, setPointsAwarded] = useState(0);
   const [maxTimeInput, setMaxTimeInput] = useState(90);
   const [blocks, setBlocks] = useState([]);
   const [currentBlockIndex, setCurrentBlockIndex] = useState(0);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
+  const [typingUser, setTypingUser] = useState("");
+  const typingTimeoutRef = useRef(null);
+  const countdownAudioRef = useRef(new Audio("/sounds/countdown.mp3")); // Reference to the countdown audio file
+  const mousePositionRef = useRef({ x: 0, y: 0 });
 
   const openModal = () => setShowModal(true);
   const closeModal = () => setShowModal(false);
@@ -87,6 +89,8 @@ function Experimenter() {
 
   useEffect(() => {
     socket.on("chat message", (msg) => {
+      setTypingUser("");
+      typingTimeoutRef.current = null;
       setMessages((prevMessages) => [...prevMessages, msg]);
 
       if (msg.user !== currentUserRef.current) {
@@ -185,6 +189,27 @@ function Experimenter() {
     }
   };
 
+  useEffect(() => {
+    socket.on("user typing", (username) => {
+      setTypingUser(username);
+
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      typingTimeoutRef.current = setTimeout(() => {
+        setTypingUser("");
+        typingTimeoutRef.current = null;
+      }, 1000);
+    });
+
+    // Cleanup on component unmount
+    return () => {
+      socket.off("user typing");
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, []);
+
   return (
     <div className="container mt-4">
       <h1 className="text-center mb-4">Chat Online de Solução de Problemas</h1>
@@ -202,6 +227,10 @@ function Experimenter() {
                     <strong>{msg.user}:</strong> {msg.text}
                   </div>
                 ))}
+                {typingUser && (
+                    <p className="text-muted">{typingUser} está digitando...</p>
+                  )}
+                {!typingUser && (<br></br>)}
               </div>
             </div>
             <div className="card-footer">

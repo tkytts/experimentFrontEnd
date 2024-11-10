@@ -191,6 +191,7 @@ function Tutorial() {
                   {typingUser && (
                     <p className="text-muted">{typingUser} está digitando...</p>
                   )}
+                  {!typingUser && <br></br>}
                 </div>
               </div>
               <div className="card-footer">
