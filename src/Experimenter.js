@@ -68,7 +68,9 @@ function Experimenter() {
     });
   };
 
-  const handleEnterChat = (e) => {};
+  const handleEnterChat = (e) => {
+    socket.emit("set confederate", currentUser)
+  };
 
   const handleInputChange = (e) => {
     setNewMessage(e.target.value);
@@ -231,7 +233,10 @@ function Experimenter() {
                     <p className="text-muted">{typingUser} está digitando...</p>
                   )}
                 {!typingUser && (<br></br>)}
-              </div>
+                <strong>Atividade:</strong>
+                  <br></br>
+                  <p className="info-box">{currentUser}</p>                
+                </div>
             </div>
             <div className="card-footer">
               <div className="input-group">
@@ -327,22 +332,16 @@ function Experimenter() {
           </div>
         </div>
       </div>
-      <div className="col-md-6">
-        <form onSubmit={handleSetUsername} className="input-group">
+      <div className="col-md-6">        
           <input
             type="text"
-            className="form-control"
             placeholder="Insira seu nome"
             value={currentUser}
             onChange={(e) => setCurrentUser(e.target.value)}
           />
-          <button type="submit" className="btn btn-primary">
-            Definir Nome
-          </button>
           <button className="btn btn-secondary" onClick={handleEnterChat}>
             Entrar no chat
           </button>
-        </form>
       </div>
       <button onClick={openModal}>Abrir Configurações</button>
 

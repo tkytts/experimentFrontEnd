@@ -18,6 +18,7 @@ function Tutorial() {
   const typingTimeoutRef = useRef(null);
   const countdownAudioRef = useRef(new Audio("/sounds/countdown.mp3")); // Reference to the countdown audio file
   const mousePositionRef = useRef({ x: 0, y: 0 });
+  const [confederateName, setConfederateName] = useState("");
 
   useEffect(() => {
     currentUserRef.current = currentUser;
@@ -61,6 +62,10 @@ function Tutorial() {
     socket.on("problem update", ({ block, problem }) => {
       setCurrentBlock(block);
       setCurrentProblem(problem);
+    });
+
+    socket.on("new confederate", (confederateName) => {
+      setConfederateName(confederateName);
     });
 
     return () => {
@@ -182,6 +187,7 @@ function Tutorial() {
                 <h3 className="h5 mb-0">Mensagens</h3>
               </div>
               <div className="card-body">
+              {confederateName && (<p className="info-box">{confederateName}</p>)}
                 <div className="mb-3">
                   {messages.map((msg, index) => (
                     <div key={index} className="mb-2">
@@ -192,6 +198,9 @@ function Tutorial() {
                     <p className="text-muted">{typingUser} está digitando...</p>
                   )}
                   {!typingUser && <br></br>}
+                  <strong>Atividade:</strong>
+                  <br></br>
+                  <p className="info-box">{currentUser}</p>
                 </div>
               </div>
               <div className="card-footer">
