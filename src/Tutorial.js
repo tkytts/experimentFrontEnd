@@ -3,9 +3,6 @@ import io from "socket.io-client";
 import ChatBox from "./ChatBox";
 import GameBox from "./GameBox";
 
-// Connect to the WebSocket server
-const socket = io("http://localhost:5000"); // Replace with your server address
-
 function Tutorial() {
   const [currentUser, setCurrentUser] = useState("");
   const currentUserRef = useRef("");
