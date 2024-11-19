@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
+import ChatBox from "./ChatBox";
+import GameBox from "./GameBox";
 
 // Connect to the WebSocket server
 const socket = io("http://localhost:5000"); // Replace with your server address
@@ -18,7 +20,6 @@ function Tutorial() {
   const typingTimeoutRef = useRef(null);
   const countdownAudioRef = useRef(new Audio("/sounds/countdown.mp3")); // Reference to the countdown audio file
   const mousePositionRef = useRef({ x: 0, y: 0 });
-  const [confederateName, setConfederateName] = useState("");
 
   useEffect(() => {
     currentUserRef.current = currentUser;
@@ -55,17 +56,9 @@ function Tutorial() {
       setCountdown(newCountdown);
     });
 
-    socket.on("chat cleared", () => {
-      setMessages([]); // Clear the local messages
-    });
-
     socket.on("problem update", ({ block, problem }) => {
       setCurrentBlock(block);
       setCurrentProblem(problem);
-    });
-
-    socket.on("new confederate", (confederateName) => {
-      setConfederateName(confederateName);
     });
 
     return () => {
@@ -181,69 +174,8 @@ function Tutorial() {
 
       {usernameSet && (
         <div className="row">
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-header">
-                <h3 className="h5 mb-0">Mensagens</h3>
-              </div>
-              <div className="card-body">
-              {confederateName && (<p className="info-box">{confederateName}</p>)}
-                <div className="mb-3">
-                  {messages.map((msg, index) => (
-                    <div key={index} className="mb-2">
-                      <strong>{msg.user}:</strong> {msg.text}
-                    </div>
-                  ))}
-                  {typingUser && (
-                    <p className="text-muted">{typingUser} está digitando...</p>
-                  )}
-                  {!typingUser && <br></br>}
-                  <strong>Atividade:</strong>
-                  <br></br>
-                  <p className="info-box">{currentUser}</p>
-                </div>
-              </div>
-              <div className="card-footer">
-                <div className="input-group">
-                  <input
-                    type="text"
-                    className="form-control me-2"
-                    placeholder="Message"
-                    value={newMessage}
-                    onChange={(e) => handleInputChange(e)}
-                    onKeyUp={handleKeyPress}
-                  />
-                  <button className="btn btn-primary" onClick={handleSend}>
-                    Enviar
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <p className="mb-3">Encontre a solução para o problema:</p>
-                <div className="fs-2 mb-3">
-                  {currentBlock && currentProblem ? (
-                    <img
-                      src={`/problems/${currentBlock.blockName}/${currentProblem}.png`}
-                      alt="Problema"
-                    />
-                  ) : (
-                    "Carregando problema..."
-                  )}
-                </div>
-                <p className={`mb-1 ${countdown === 0 ? "text-danger" : ""}`}>
-                  {countdown > 0
-                    ? `Restam ${countdown} segundos`
-                    : "O tempo acabou"}
-                </p>
-                <p className="mb-1">Points: 0</p>
-              </div>
-            </div>
-          </div>
+          <ChatBox currentUser={currentUser} isAdmin={false} />
+          <GameBox isAdmin={false} />
         </div>
       )}
     </div>
