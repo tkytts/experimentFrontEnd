@@ -110,7 +110,7 @@ function GameBox({ isAdmin }) {
           <p className={`mb-1 ${countdown === 0 ? "text-danger" : ""}`}>
             {countdown > 0 ? `Restam ${countdown} segundos` : "O tempo acabou"}
           </p>
-          <p className="mb-1">Points: 0</p>
+          <p className="mb-1">Pontos: 0</p>
 
           {isAdmin && (<div><button className="btn btn-primary" onClick={handleStartTimer}>
             Iniciar Timer
