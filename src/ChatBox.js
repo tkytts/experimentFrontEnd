@@ -12,6 +12,18 @@ function ChatBox({ currentUser, isAdmin }) {
   const typingTimeoutRef = useRef(null);
 
   useEffect(() => {
+    const updateMousePosition = (e) => {
+      mousePositionRef.current = { x: e.clientX, y: e.clientY };
+    };
+
+    window.addEventListener("mousemove", updateMousePosition);
+
+    return () => {
+      window.removeEventListener("mousemove", updateMousePosition);
+    };
+  }, []);
+
+  useEffect(() => {
     socket.on("chat message", (msg) => {
       setTypingUser("");
       typingTimeoutRef.current = null;
@@ -51,6 +63,16 @@ function ChatBox({ currentUser, isAdmin }) {
       timeStamp: new Date().toISOString(),
     };
     socket.emit("chat message", messageObj);
+    if (!isAdmin)
+      socket.emit("telemetry event", {
+        user: currentUser,
+        action: "message sent",
+        text: newMessage,
+        timestamp: new Date().toISOString(),
+        x: mousePositionRef.current.x,
+        y: mousePositionRef.current.y,
+      });
+    
     setNewMessage("");
     new Audio("/sounds/message-sent.mp3").play(); // Play sound when a message is sent
   };
@@ -68,7 +90,7 @@ function ChatBox({ currentUser, isAdmin }) {
   const handleTyping = (e) => {
     setNewMessage(e.target.value);
     socket.emit("typing", currentUser);
-    if (isAdmin)
+    if (!isAdmin)
       socket.emit("telemetry event", {
         user: currentUser,
         action: "edit",

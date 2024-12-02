@@ -31,7 +31,7 @@ function GameBox({ isAdmin }) {
     };
   }, []);
 
-  
+
   useEffect(() => {
     fetch("http://localhost:5000/blocks")
       .then((response) => response.json())
@@ -107,7 +107,10 @@ function GameBox({ isAdmin }) {
               "Carregando problema..."
             )}
           </div>
-          <p className={`mb-1 ${countdown === 0 ? "text-danger" : ""}`}>
+          <p
+            className={`mb-1 ${countdown === 0 ? "text-danger" : ""} ${countdown <= 10 ? "flash-red" : ""
+              }`}
+          >
             {countdown > 0 ? `Restam ${countdown} segundos` : "O tempo acabou"}
           </p>
           <p className="mb-1">Pontos: 0</p>
@@ -115,12 +118,12 @@ function GameBox({ isAdmin }) {
           {isAdmin && (<div><button className="btn btn-primary" onClick={handleStartTimer}>
             Iniciar Timer
           </button>
-          <button className="btn btn-danger" onClick={handleStopTimer}>
-            Pausar Timer
-          </button>
-          <button className="btn btn-secondary" onClick={handleResetTimer}>
-            Resetar Timer
-          </button></div>)}
+            <button className="btn btn-danger" onClick={handleStopTimer}>
+              Pausar Timer
+            </button>
+            <button className="btn btn-secondary" onClick={handleResetTimer}>
+              Resetar Timer
+            </button></div>)}
           <br></br>
           {isAdmin && blocks.length > 0 && (
             <>
