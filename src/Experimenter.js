@@ -9,7 +9,8 @@ const socket = io(config.serverUrl);
 function Experimenter() {
   const [currentUser, setCurrentUser] = useState("");
   const [gender, setGender] = useState("F");
-  const [showModal, setShowModal] = useState(false);
+  const [showGameConfigModal, setShowGameConfigModal] = useState(false);
+  const [showResolutionModal, setShowResolutionModal] = useState(false);
   const [pointsAwarded, setPointsAwarded] = useState(7);
   const [maxTimeInput, setMaxTimeInput] = useState(90);
   const [confederatesFemaleStart, setConfederatesFemaleStart] = useState([]);
@@ -42,12 +43,20 @@ function Experimenter() {
     loadConfederates();
   }, []);
 
-  const openModal = () => {
-    setShowModal(true);
+  const openGameConfigModal = () => {
+    setShowGameConfigModal(true);
     handleGenderChange(gender);
-  }
+  };
 
-  const closeModal = () => setShowModal(false);
+  const closeGameConfigModal = () => setShowGameConfigModal(false);
+
+  const openResolutionModal = () => {
+    setShowResolutionModal(true);
+  };
+
+  const closeResolutionModal = () => {
+    setShowResolutionModal(false);
+  };
 
   const handleGenderChange = (selectedGender) => {
     setGender(selectedGender);
@@ -76,7 +85,7 @@ function Experimenter() {
       timer: enableTimerChimes
     });
     socket.emit("first block");
-    closeModal();
+    closeGameConfigModal();
   };
 
   return (
@@ -87,11 +96,14 @@ function Experimenter() {
         <ChatBox currentUser={currentUser} isAdmin={true} />
         <GameBox isAdmin={true} />
       </div>
-      <button className="btn btn-primary" onClick={openModal}>
-        Reiniciar Jogo
+      <button className="btn btn-primary" onClick={openGameConfigModal}>
+        Iniciar Jogo
+      </button>
+      <button className="btn btn-secondary" onClick={openResolutionModal}>
+        Resolver Jogo e Próximo Bloco
       </button>
 
-      {showModal && (
+      {showGameConfigModal && (
         <div className="modal-content p-4">
           <h2 id="modal-title" className="mb-3">Configurações do Jogo</h2>
           <label className="d-block mb-3">
@@ -186,10 +198,20 @@ function Experimenter() {
             <button className="btn btn-success" onClick={handleSave}>
               Iniciar
             </button>
-            <button className="btn btn-danger" onClick={closeModal}>
+            <button className="btn btn-danger" onClick={closeGameConfigModal}>
               Cancelar
             </button>
           </div>
+        </div>
+      )}
+
+      {showResolutionModal && (
+        <div className="modal-content p-4">
+          <h2 id="resolution-modal-title" className="mb-3">Resolução do Jogo e Próximo Bloco</h2>
+          {/* Add your form elements and content here */}
+          <button className="btn btn-primary" onClick={closeResolutionModal}>
+            Fechar
+          </button>
         </div>
       )}
     </div>
