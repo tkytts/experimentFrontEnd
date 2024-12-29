@@ -103,6 +103,41 @@ code {
   font-weight: bold;
 }
 
+.custom-scroll {
+  max-height: 70vh; /* Makes it 70% of the viewport height */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 10px;
+}
+
+select {
+  appearance: none; /* For modern browsers */
+  -webkit-appearance: none; /* For Safari */
+  -moz-appearance: none; /* For Firefox */
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTEiIGhlaWdodD0iNiIgdmlld0JveD0iMCAwIDExIDYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTAgMS42YzAtLjQuNC0uNi44LS42aDEwYy40IDAgLjguMi44LjZzLS40LjYtLjguNkw2IDUuNGMtLjQgMC0uOC0uMi0uOC0uNkwweiIgZmlsbD0iI0E3QTdBNSIvPjwvc3ZnPg==');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 20px; /* Space for the arrow */
+}
+
+.checkbox-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+}
+
+.checkbox-input {
+  width: 15px;
+  height: 15px;
+}
+
 .modal-content button.save-btn {
   background-color: #28a745; /* Green for Save */
   color: white;

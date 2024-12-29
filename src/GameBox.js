@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:5000"); // Replace with your server address
+const socket = io("http://192.168.196.93:5000"); // Replace with your server address
 
 function GameBox({ isAdmin }) {
   const [currentProblem, setCurrentProblem] = useState(null); // New state to store the current problem
   const [currentBlock, setCurrentBlock] = useState(null); // New state to store the current block
   const [countdown, setCountdown] = useState(null);
   const countdownAudioRef = useRef(new Audio("/sounds/countdown.mp3")); // Reference to the countdown audio file
+  const [countdownAudioEnabled, setCountdownAudioEnabled] = useState(true);
   const [blocks, setBlocks] = useState([]);
   const [currentBlockIndex, setCurrentBlockIndex] = useState(0);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
@@ -22,6 +23,10 @@ function GameBox({ isAdmin }) {
       setCountdown(newCountdown);
     });
 
+    socket.on("chimes updated", (data) => {
+      setCountdownAudioEnabled(data.timer);
+    });
+
     return () => {
       socket.off("chat message");
       socket.off("chat history");
@@ -33,23 +38,25 @@ function GameBox({ isAdmin }) {
 
 
   useEffect(() => {
-    fetch("http://localhost:5000/blocks")
+    fetch("http://192.168.196.93:5000/blocks")
       .then((response) => response.json())
       .then((data) => setBlocks(data))
       .catch((error) => console.error("Error fetching blocks:", error));
   }, []);
 
   useEffect(() => {
-    if (countdown <= 10 && countdown > 0) {
-      countdownAudioRef.current.play();
-    } else {
-      countdownAudioRef.current.pause();
-      countdownAudioRef.current.currentTime = 0; // Reset audio playback
-    }
+    if (countdownAudioEnabled) {
+      if (countdown <= 10 && countdown > 0) {
+        countdownAudioRef.current.play();
+      } else {
+        countdownAudioRef.current.pause();
+        countdownAudioRef.current.currentTime = 0; // Reset audio playback
+      }
 
-    if (countdown === 0) {
-      countdownAudioRef.current.pause();
-      countdownAudioRef.current.currentTime = 0;
+      if (countdown === 0) {
+        countdownAudioRef.current.pause();
+        countdownAudioRef.current.currentTime = 0;
+      }
     }
   }, [countdown]);
 
@@ -113,6 +120,7 @@ function GameBox({ isAdmin }) {
           >
             {countdown > 0 ? `Restam ${countdown} segundos` : "O tempo acabou"}
           </p>
+
           <p className="mb-1">Pontos: 0</p>
 
           {isAdmin && (<div><button className="btn btn-primary" onClick={handleStartTimer}>
@@ -148,7 +156,7 @@ function GameBox({ isAdmin }) {
                 value={currentProblemIndex}
                 className="form-select mb-3"
               >
-                {blocks[currentBlockIndex].order.map((problem, index) => (
+                {blocks[currentBlockIndex].problems.map((problem, index) => (
                   <option key={index} value={index}>
                     {problem}
                   </option>

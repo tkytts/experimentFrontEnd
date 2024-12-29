@@ -1,15 +1,20 @@
 import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:5000"); // Replace with your server address
+const socket = io("http://192.168.196.93:5000"); // Replace with your server address
 
 function ChatBox({ currentUser, isAdmin }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [typingUser, setTypingUser] = useState("");
   const [confederateName, setConfederateName] = useState("");
+  const [chimesConfig, setChimesConfig] = useState({
+    messageSent: true,
+    messageReceived: true
+  });
   const mousePositionRef = useRef({ x: 0, y: 0 });
   const typingTimeoutRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
     const updateMousePosition = (e) => {
@@ -18,18 +23,12 @@ function ChatBox({ currentUser, isAdmin }) {
 
     window.addEventListener("mousemove", updateMousePosition);
 
-    return () => {
-      window.removeEventListener("mousemove", updateMousePosition);
-    };
-  }, []);
-
-  useEffect(() => {
     socket.on("chat message", (msg) => {
       setTypingUser("");
       typingTimeoutRef.current = null;
       setMessages((prevMessages) => [...prevMessages, msg]);
 
-      if (msg.user !== currentUser) {
+      if (msg.user !== currentUser && chimesConfig.messageReceived) {
         new Audio("/sounds/message-received.mp3").play(); // Play sound when a message is received
       }
     });
@@ -45,14 +44,34 @@ function ChatBox({ currentUser, isAdmin }) {
     });
 
     socket.on("chat cleared", () => {
-        setMessages([]); // Clear the local messages
-      });
+      setMessages([]);
+    });
+
+    socket.on("chimes updated", (data) => {
+      setChimesConfig(data);
+    });
+    
+    socket.emit("get chimes");
 
     return () => {
+      window.removeEventListener("mousemove", updateMousePosition);
       socket.off("chat message");
       socket.off("user typing");
+      socket.off("new confederate");
+      socket.off("chat cleared");
+      socket.off("chimes updated");
     };
   }, [currentUser]);
+
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]); // Trigger scrolling when `messages` updates
 
   const handleSend = () => {
     if (newMessage.trim() === "") return;
@@ -66,15 +85,18 @@ function ChatBox({ currentUser, isAdmin }) {
     if (!isAdmin)
       socket.emit("telemetry event", {
         user: currentUser,
+        confederate: confederateName,
         action: "message sent",
         text: newMessage,
         timestamp: new Date().toISOString(),
         x: mousePositionRef.current.x,
         y: mousePositionRef.current.y,
       });
-    
+
     setNewMessage("");
-    new Audio("/sounds/message-sent.mp3").play(); // Play sound when a message is sent
+
+    if (chimesConfig.messageSent)
+      new Audio("/sounds/message-sent.mp3").play(); // Play sound when a message is sent
   };
 
   const handleKeyPress = (e) => {
@@ -93,6 +115,7 @@ function ChatBox({ currentUser, isAdmin }) {
     if (!isAdmin)
       socket.emit("telemetry event", {
         user: currentUser,
+        confederate: confederateName,
         action: "edit",
         text: e.target.value,
         timestamp: new Date().toISOString(),
@@ -107,7 +130,13 @@ function ChatBox({ currentUser, isAdmin }) {
         <div className="card-header">
           <h3 className="h5 mb-0">Mensagens</h3>
         </div>
-        <div className="card-body">
+        <div className="card-body custom-scroll"
+          style={{
+            maxHeight: '500px', // Adjust height as needed
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            paddingRight: '10px',
+          }}>
           {confederateName && <p className="info-box">{confederateName}</p>}
           <div className="mb-3">
             {messages.map((msg, index) => (
@@ -115,14 +144,16 @@ function ChatBox({ currentUser, isAdmin }) {
                 <strong>{msg.user}:</strong> {msg.text}
               </div>
             ))}
+          </div>
+          <div>
+            <strong>Atividade:</strong>{' '}
             {typingUser && (
-              <p className="text-muted">{typingUser} está digitando...</p>
+              <nobr className="text-muted">{typingUser} está digitando...</nobr>
             )}
-            {!typingUser && <br></br>}
-            <strong>Atividade:</strong>
             <br></br>
             <p className="info-box">{currentUser}</p>
           </div>
+          <div ref={messagesEndRef} />
         </div>
         <div className="card-footer">
           <div className="input-group">
