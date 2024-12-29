@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
+import config from "./config";
 
-const socket = io("http://192.168.196.93:5000"); // Replace with your server address
+const socket = io(config.serverUrl);
 
 function ChatBox({ currentUser, isAdmin }) {
   const [messages, setMessages] = useState([]);
@@ -50,7 +51,7 @@ function ChatBox({ currentUser, isAdmin }) {
     socket.on("chimes updated", (data) => {
       setChimesConfig(data);
     });
-    
+
     socket.emit("get chimes");
 
     return () => {

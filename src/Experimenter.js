@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import ChatBox from "./ChatBox";
 import GameBox from "./GameBox";
+import config from "./config";
 
-// Connect to the WebSocket server
-const socket = io("http://192.168.196.93:5000"); // Replace with your server address
+const socket = io(config.serverUrl);
 
 function Experimenter() {
   const [currentUser, setCurrentUser] = useState("");
