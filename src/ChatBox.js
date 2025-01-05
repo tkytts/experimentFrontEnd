@@ -4,11 +4,11 @@ import config from "./config";
 
 const socket = io(config.serverUrl);
 
-function ChatBox({ currentUser, isAdmin }) {
+function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef, activityRef }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [typingUser, setTypingUser] = useState("");
-  const [confederateName, setConfederateName] = useState("");
+  const [confederateName, setConfederateName] = useState("Nome do Confederado");
   const [chimesConfig, setChimesConfig] = useState({
     messageSent: true,
     messageReceived: true
@@ -137,8 +137,9 @@ function ChatBox({ currentUser, isAdmin }) {
             overflowY: 'auto',
             overflowX: 'hidden',
             paddingRight: '10px',
-          }}>
-          {confederateName && <p className="info-box">{confederateName}</p>}
+          }}
+          ref={chatRef}>
+          {confederateName && <p className="info-box" ref={confederateNameRef}>{isAdmin ? currentUser : confederateName}</p>}
           <div className="mb-3">
             {messages.map((msg, index) => (
               <div key={index} className="mb-2">
@@ -147,7 +148,7 @@ function ChatBox({ currentUser, isAdmin }) {
             ))}
           </div>
           <div>
-            <strong>Atividade:</strong>{' '}
+            <strong ref={activityRef}>Atividade:</strong>{' '}
             {typingUser && (
               <nobr className="text-muted">{typingUser} está digitando...</nobr>
             )}
@@ -161,10 +162,11 @@ function ChatBox({ currentUser, isAdmin }) {
             <input
               type="text"
               className="form-control me-2"
-              placeholder="Message"
+              placeholder="Mensagem"
               value={newMessage}
               onChange={(e) => handleTyping(e)}
               onKeyUp={handleKeyPress}
+              ref={messageRef}
             />
             <button className="btn btn-primary" onClick={handleSend}>
               Enviar

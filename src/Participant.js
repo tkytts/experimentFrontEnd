@@ -19,24 +19,26 @@ function Participant() {
 
   socket.on("new confederate", (confederateName) => {
     setConfederateName(confederateName);
+    setReady(false);
   });
 
   const handleSetUsername = (e) => {
     e.preventDefault();
     if (currentUser.trim() !== "") {
       setUsernameSet(true);
+      socket.emit("set participantName", currentUser);
     }
   };
 
   const handleReady = () => {
-    setReady(true);  
+    setReady(true);
     socket.emit("get chimes");
     socket.emit("start timer");
   };
 
   return (
     <div className="container mt-4">
-      <h1 className="text-center mb-4">Chat Online de Solução de Problemas</h1>
+      <h1 className="text-center mb-4">Bate-Papo Online de Resolução de Problemas</h1>
 
       {!usernameSet && (
         <div className="mb-4">
@@ -58,7 +60,7 @@ function Participant() {
       {usernameSet && !confederateName && (
         <div className="modal" style={modalStyle}>
           <div className="modal-content" style={modalContentStyle}>
-            <p>Esperando o outro jogador ficar pronto.</p>
+            <p>Aguardando o(a) outro(a) jogador(a) ficar pronto(a).</p>
           </div>
         </div>
       )}
@@ -66,9 +68,10 @@ function Participant() {
       {usernameSet && confederateName && !ready && (
         <div className="modal" style={modalStyle}>
           <div className="modal-content" style={modalContentStyle}>
-            <p>{`You are playing with ${confederateName}.`}</p>
-            <button className="btn btn-primary" onClick={handleReady}>
-              Pronto!
+            <p>Você está jogando com</p>
+            <p class name="h2"><b>{confederateName}</b></p>
+            <button className="btn btn-primary btn-narrow" onClick={handleReady}>
+              Pronto(a)!
             </button>
           </div>
         </div>

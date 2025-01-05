@@ -3,6 +3,7 @@ import io from "socket.io-client";
 import ChatBox from "./ChatBox";
 import GameBox from "./GameBox";
 import config from "./config";
+import Modal from "./Modal";
 
 const socket = io(config.serverUrl);
 
@@ -18,6 +19,8 @@ function Experimenter() {
   const [enableMessageSentChimes, setEnableMessageSentChimes] = useState(true);
   const [enableMessageReceivedChimes, setEnableMessageReceivedChimes] = useState(true);
   const [enableTimerChimes, setEnableTimerChimes] = useState(true);
+  const [teamAnswer, setTeamAnswer] = useState("");
+  const [currentProblem, setCurrentProblem] = useState(0);
 
   useEffect(() => {
     // Load confederates data from public folder
@@ -45,12 +48,38 @@ function Experimenter() {
 
   const openGameConfigModal = () => {
     setShowGameConfigModal(true);
-    handleGenderChange(gender);
+
+    if (!currentUser)
+      handleGenderChange(gender);
   };
 
   const closeGameConfigModal = () => setShowGameConfigModal(false);
 
+  const nextProblem = () => {
+    if (currentProblem === 4) {
+      socket.emit("reset timer");
+      socket.emit("stop timer");
+      setNextConfederate()
+      openGameConfigModal();
+      socket.emit("block finished");
+    }
+    else {
+      setCurrentProblem(currentProblem + 1);
+      socket.emit("next problem");
+      socket.emit("reset timer");
+      socket.emit("start timer");
+    }
+  };
+
+  function setNextConfederate() {
+    const confederates = gender === "F" ? confederatesFemaleStart : confederatesMaleStart;
+    const currentIndex = confederates.findIndex(confederate => confederate.name === currentUser);
+    const nextIndex = (currentIndex + 1) % confederates.length;
+    setCurrentUser(confederates[nextIndex].name);
+  }
+
   const openResolutionModal = () => {
+    setTeamAnswer("");
     setShowResolutionModal(true);
   };
 
@@ -75,6 +104,15 @@ function Experimenter() {
   };
 
   const handleSave = () => {
+    let confederateBlock;
+    if (gender === "F") {
+      confederateBlock = confederatesFemaleStart.findIndex(confederate => confederate.name === currentUser);
+    } else {
+      confederateBlock = confederatesMaleStart.findIndex(confederate => confederate.name === currentUser);
+    }
+
+    setCurrentProblem(0);
+
     socket.emit("start game");
     socket.emit("set points awarded", pointsAwarded);
     socket.emit("set max time", maxTimeInput);
@@ -84,13 +122,29 @@ function Experimenter() {
       messageReceived: enableMessageReceivedChimes,
       timer: enableTimerChimes
     });
-    socket.emit("first block");
+    socket.emit("update problem selection", {
+      blockIndex: confederateBlock,
+      problemIndex: currentProblem
+    }
+    );
+    socket.emit("clear chat");
+
     closeGameConfigModal();
+  };
+
+  const resolveGame = (gameResolutionType) => {
+    if (!teamAnswer && gameResolutionType !== 'TNP') {
+      alert('Por favor, preencha o campo "Resposta da Equipe".');
+      return;
+    }
+
+    socket.emit("set game resolution", { gameResolutionType, teamAnswer });
+    closeResolutionModal();
   };
 
   return (
     <div className="container mt-4" style={{ overflow: "hidden" }}>
-      <h1 className="text-center mb-4">Chat Online de Solução de Problemas</h1>
+      <h1 className="text-center mb-4">Bate-Papo Online de Resolução de Problemas</h1>
 
       <div className="row">
         <ChatBox currentUser={currentUser} isAdmin={true} />
@@ -99,12 +153,15 @@ function Experimenter() {
       <button className="btn btn-primary" onClick={openGameConfigModal}>
         Iniciar Jogo
       </button>
-      <button className="btn btn-secondary" onClick={openResolutionModal}>
-        Resolver Jogo e Próximo Bloco
+      <button className="btn btn-warning m-3" onClick={openResolutionModal}>
+        Resolver Jogo
+      </button>
+      <button className="btn btn-secondary" onClick={nextProblem}>
+        Próximo Problema
       </button>
 
       {showGameConfigModal && (
-        <div className="modal-content p-4">
+        <Modal>
           <h2 id="modal-title" className="mb-3">Configurações do Jogo</h2>
           <label className="d-block mb-3">
             Gênero Inicial:
@@ -202,17 +259,30 @@ function Experimenter() {
               Cancelar
             </button>
           </div>
-        </div>
+        </Modal>
       )}
 
       {showResolutionModal && (
-        <div className="modal-content p-4">
-          <h2 id="resolution-modal-title" className="mb-3">Resolução do Jogo e Próximo Bloco</h2>
-          {/* Add your form elements and content here */}
-          <button className="btn btn-primary" onClick={closeResolutionModal}>
-            Fechar
-          </button>
-        </div>
+        <Modal onClose={closeResolutionModal}>
+          <h2 id="resolution-modal-title" className="mb-3">Resolução do Jogo e Próximo Problema</h2>
+          <div className="mb-3">
+            <label htmlFor="teamAnswer" className="form-label">Resposta do Time:</label>
+            <input
+              type="text"
+              className="form-control"
+              id="teamAnswer"
+              value={teamAnswer}
+              onChange={(e) => setTeamAnswer(e.target.value)}
+            />
+          </div>
+          <div className="d-flex justify-content-between mb-3">
+            <button className="btn btn-success" onClick={() => resolveGame('AP')}>CP</button>
+            <button className="btn btn-warning" onClick={() => resolveGame('ANP')}>CSP</button>
+            <button className="btn btn-primary" onClick={() => resolveGame('DP')}>DP</button>
+            <button className="btn btn-danger" onClick={() => resolveGame('DNP')}>DSP</button>
+            <button className="btn btn-secondary" onClick={() => resolveGame('TNP')}>TSP</button>
+          </div>
+        </Modal>
       )}
     </div>
   );
