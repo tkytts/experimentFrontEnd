@@ -68,8 +68,9 @@ function Participant() {
       {usernameSet && confederateName && !ready && (
         <div className="modal" style={modalStyle}>
           <div className="modal-content" style={modalContentStyle}>
-            <p>Você está jogando com</p>
-            <p class name="h2"><b>{confederateName}</b></p>
+          <p>Você está jogando com</p>
+          <p className="h2"><b>{confederateName}</b></p>
+          <p>Clique em “PRONTO(A)!” quando estiver pronto(a) para iniciar o jogo.”</p>
             <button className="btn btn-primary btn-narrow" onClick={handleReady}>
               Pronto(a)!
             </button>

@@ -172,5 +172,10 @@ select {
 }
 
 .click-animation {
-  animation: clickAnimation 0.2s ease-in-out;
+  animation: clickAnimation 0.5s ease-in-out;
+}
+
+.button-dead {
+  opacity: 0.5;
+  cursor: not-allowed !important;
 }

@@ -20,6 +20,7 @@ function GameBox({ isAdmin, gamesRef, timerRef, pointsRef, teamAnswerRef }) {
   socket.on("problem update", ({ block, problem }) => {
     setCurrentBlock(block);
     setCurrentProblem(problem);
+    setShowResults(false);
   });
 
   useEffect(() => {

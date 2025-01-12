@@ -8,7 +8,7 @@ import Modal from "./Modal";
 const socket = io(config.serverUrl);
 
 function Experimenter() {
-  const [currentUser, setCurrentUser] = useState("");
+  const [confederateName, setConfederateName] = useState("");
   const [gender, setGender] = useState("F");
   const [showGameConfigModal, setShowGameConfigModal] = useState(false);
   const [showResolutionModal, setShowResolutionModal] = useState(false);
@@ -21,6 +21,7 @@ function Experimenter() {
   const [enableTimerChimes, setEnableTimerChimes] = useState(true);
   const [teamAnswer, setTeamAnswer] = useState("");
   const [currentProblem, setCurrentProblem] = useState(0);
+  const [currentParticipant, setCurrentParticipant] = useState(null);
 
   useEffect(() => {
     // Load confederates data from public folder
@@ -46,10 +47,28 @@ function Experimenter() {
     loadConfederates();
   }, []);
 
+  useEffect(() => {
+    // Fetch current user data
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch(`${config.serverUrl}/currentUser`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch current user data.");
+        }
+        const userData = await response.json();
+        setCurrentParticipant(userData);
+      } catch (error) {
+        console.error("Error fetching current user data:", error);
+      }
+    };
+
+    fetchCurrentUser();
+  }, []);
+
   const openGameConfigModal = () => {
     setShowGameConfigModal(true);
 
-    if (!currentUser)
+    if (!confederateName)
       handleGenderChange(gender);
   };
 
@@ -71,11 +90,12 @@ function Experimenter() {
     }
   };
 
+
   function setNextConfederate() {
     const confederates = gender === "F" ? confederatesFemaleStart : confederatesMaleStart;
-    const currentIndex = confederates.findIndex(confederate => confederate.name === currentUser);
+    const currentIndex = confederates.findIndex(confederate => confederate.name === confederateName);
     const nextIndex = (currentIndex + 1) % confederates.length;
-    setCurrentUser(confederates[nextIndex].name);
+    setConfederateName(confederates[nextIndex].name);
   }
 
   const openResolutionModal = () => {
@@ -90,7 +110,7 @@ function Experimenter() {
   const handleGenderChange = (selectedGender) => {
     setGender(selectedGender);
     let firstUser = selectedGender === "F" ? confederatesFemaleStart[0].name : confederatesMaleStart[0].name;
-    setCurrentUser(firstUser);
+    setConfederateName(firstUser);
   };
 
   const getConfederateOptions = () => {
@@ -106,9 +126,9 @@ function Experimenter() {
   const handleSave = () => {
     let confederateBlock;
     if (gender === "F") {
-      confederateBlock = confederatesFemaleStart.findIndex(confederate => confederate.name === currentUser);
+      confederateBlock = confederatesFemaleStart.findIndex(confederate => confederate.name === confederateName);
     } else {
-      confederateBlock = confederatesMaleStart.findIndex(confederate => confederate.name === currentUser);
+      confederateBlock = confederatesMaleStart.findIndex(confederate => confederate.name === confederateName);
     }
 
     setCurrentProblem(0);
@@ -116,7 +136,7 @@ function Experimenter() {
     socket.emit("start game");
     socket.emit("set points awarded", pointsAwarded);
     socket.emit("set max time", maxTimeInput);
-    socket.emit("set confederate", currentUser);
+    socket.emit("set confederate", confederateName);
     socket.emit("set chimes", {
       messageSent: enableMessageSentChimes,
       messageReceived: enableMessageReceivedChimes,
@@ -147,7 +167,7 @@ function Experimenter() {
       <h1 className="text-center mb-4">Bate-Papo Online de Resolução de Problemas</h1>
 
       <div className="row">
-        <ChatBox currentUser={currentUser} isAdmin={true} />
+        <ChatBox currentUser={currentParticipant} isAdmin={true} />
         <GameBox isAdmin={true} />
       </div>
       <button className="btn btn-primary" onClick={openGameConfigModal}>
@@ -192,8 +212,8 @@ function Experimenter() {
             Nome do(a) Confederado(a):
             <select
               className="form-control mt-2"
-              value={currentUser}
-              onChange={(e) => setCurrentUser(e.target.value)}
+              value={confederateName}
+              onChange={(e) => setConfederateName(e.target.value)}
             >
               <option value="" disabled>
                 Selecione

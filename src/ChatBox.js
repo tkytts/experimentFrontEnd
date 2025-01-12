@@ -4,11 +4,11 @@ import config from "./config";
 
 const socket = io(config.serverUrl);
 
-function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef, activityRef }) {
+function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef, activityRef, sendButtonRef }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [typingUser, setTypingUser] = useState("");
-  const [confederateName, setConfederateName] = useState("Nome do Confederado");
+  const [confederateName, setConfederateName] = useState("Nome do(a) Jogador(a)");
   const [chimesConfig, setChimesConfig] = useState({
     messageSent: true,
     messageReceived: true
@@ -29,7 +29,7 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
       typingTimeoutRef.current = null;
       setMessages((prevMessages) => [...prevMessages, msg]);
 
-      if (msg.user !== currentUser && chimesConfig.messageReceived) {
+      if (msg.user !== currentUser && chimesConfig?.messageReceived) {
         new Audio("/sounds/message-received.mp3").play(); // Play sound when a message is received
       }
     });
@@ -96,7 +96,7 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
 
     setNewMessage("");
 
-    if (chimesConfig.messageSent)
+    if (chimesConfig?.messageSent)
       new Audio("/sounds/message-sent.mp3").play(); // Play sound when a message is sent
   };
 
@@ -153,7 +153,7 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
               <nobr className="text-muted">{typingUser} está digitando...</nobr>
             )}
             <br></br>
-            <p className="info-box">{currentUser}</p>
+            <p className="info-box">{isAdmin ? confederateName : currentUser}</p>
           </div>
           <div ref={messagesEndRef} />
         </div>
@@ -168,7 +168,10 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
               onKeyUp={handleKeyPress}
               ref={messageRef}
             />
-            <button className="btn btn-primary" onClick={handleSend}>
+            <button
+              className="btn btn-primary"
+              onClick={handleSend}
+              ref={sendButtonRef}>
               Enviar
             </button>
             {isAdmin && (

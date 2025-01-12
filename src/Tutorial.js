@@ -10,10 +10,14 @@ const socket = io(config.serverUrl);
 
 function Tutorial() {
   const [currentUser, setCurrentUser] = useState("");
-  const currentUserRef = useRef("");
   const [usernameSet, setUsernameSet] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
+  const [newMessage, setNewMessage] = useState("");
+  const [showMessageBox, setShowMessageBox] = useState(false);
+  const [messageInputStyle, setMessageInputStyle] = useState(null);
+  const currentUserRef = useRef("");
   const messageRef = useRef(null);
+  const sendButtonRef = useRef(null);
   const chatRef = useRef(null);
   const confederateNameRef = useRef(null);
   const activityRef = useRef(null);
@@ -21,39 +25,246 @@ function Tutorial() {
   const timerRef = useRef(null);
   const pointsRef = useRef(null);
   const teamAnswerRef = useRef(null);
-  const step11ButtonRef = useRef(null);
+  const readyButtonRef = useRef(null);
 
   useEffect(() => {
     currentUserRef.current = currentUser;
   }, [currentUser]);
 
-  const handleSetUsername = (e) => {
-    e.preventDefault();
-    if (currentUser.trim() !== "") {
-      setUsernameSet(true);
-    }
-  };
 
   const handleTutorialStep1 = () => {
     setCurrentUser("Seu Nome");
     setUsernameSet(true);
     socket.emit("set max time", 90);
     setTutorialStep(1);
+
+    socket.emit("set chimes", {
+      messageSent: true,
+      messageReceived: true,
+      timer: true
+    });
   };
 
   const handleSimulation1 = () => {
+    let simulationConfederate = "Sérgio";
     setTutorialStep(11);
-    socket.emit("set confederate", "Ricardo");
-    socket.emit("tutorial problem", {block: {blockName: "T_1" }, problem: "1"});
+    socket.emit("set confederate", simulationConfederate);
+    setCurrentUser("Flávia");
+    socket.emit("tutorial problem", { block: { blockName: "T_1" }, problem: "1" });
 
     setTimeout(() => {
-      step11ButtonRef.current.classList.add('click-animation');
+      readyButtonRef.current.classList.add('click-animation');
 
       setTimeout(() => {
-        step11ButtonRef.current.classList.remove('click-animation');
-        setTutorialStep(12);
-      }, 200);
+        readyButtonRef.current.classList.remove('click-animation');
+        setTimeout(() => {
+          setTutorialStep(12);
+        }, 200);
+
+        socket.emit("start timer");
+
+        setTimeout(() => {
+          socket.emit("typing", simulationConfederate);
+          setTimeout(() => {
+            socket.emit("chat message", {
+              user: simulationConfederate,
+              text: "O que você acha?",
+              timeStamp: new Date().toISOString(),
+            });
+            socket.emit("stop timer");
+            setTimeout(() => {
+              setTutorialStep(13);
+            }, 2000);
+          }, 1000);
+        }, 2800)
+      }, 500);
     }, 2000);
+  }
+
+  const handleTutorialStep13 = () => {
+    let simulationConfederate = "Sérgio";
+    socket.emit("set max time", 70);
+    socket.emit("start timer");
+    setTutorialStep(14);
+    handleTutorialMessage("A resposta é triângulo");
+
+    setTimeout(() => {
+      socket.emit("typing", simulationConfederate);
+      socket.emit("set max time", 33);
+      socket.emit("start timer");
+      setTimeout(() => {
+        socket.emit("chat message", {
+          user: simulationConfederate,
+          text: "Sim, acho que você está certa!",
+          timeStamp: new Date().toISOString(),
+        });
+
+        setTimeout(() => {
+          socket.emit("set answer", "triângulo");
+          socket.emit("set game resolution", { gameResolutionType: "AP", teamAnswer: "triângulo" });
+          socket.emit("set max time", 11);
+          socket.emit("start timer");
+
+          setTimeout(() => {
+            setTutorialStep(15);
+          }, 25000);
+        }, 3000);
+      }, 3000);
+    }, 5000);
+  };
+
+  const handleSimulation2 = () => {
+    socket.emit("set answer", "");
+    socket.emit("reset points");
+    socket.emit("clear chat");
+    socket.emit("set max time", 90);
+    let simulationConfederate = "César";
+    setTutorialStep(16);
+    socket.emit("set confederate", simulationConfederate);
+    setCurrentUser("Ana");
+    socket.emit("tutorial problem", { block: { blockName: "T_1" }, problem: "2" });
+
+    setTimeout(() => {
+      readyButtonRef.current.classList.add('click-animation');
+
+      setTimeout(() => {
+        readyButtonRef.current.classList.remove('click-animation');
+        setTimeout(() => {
+          setTutorialStep(12);
+        }, 200);
+
+        socket.emit("start timer");
+
+        setTimeout(() => {
+          socket.emit("typing", simulationConfederate);
+          setTimeout(() => {
+            socket.emit("chat message", {
+              user: simulationConfederate,
+              text: "Em qual opção você está pensando?",
+              timeStamp: new Date().toISOString(),
+            });
+            socket.emit("stop timer");
+            setTimeout(() => {
+              setTutorialStep(17);
+            }, 2000);
+          }, 1000);
+        }, 2800)
+      }, 500);
+    }, 2000);
+  };
+
+  const handleTutorialStep17 = () => {
+    let simulationConfederate = "César";
+    socket.emit("set max time", 70);
+    socket.emit("start timer");
+    setTutorialStep(18);
+    handleTutorialMessage("Acho que a resposta é 11");
+
+    setTimeout(() => {
+      socket.emit("typing", simulationConfederate);
+      socket.emit("set max time", 33);
+      socket.emit("start timer");
+      setTimeout(() => {
+        socket.emit("chat message", {
+          user: simulationConfederate,
+          text: "Eu discordo... acho que é 12!!",
+          timeStamp: new Date().toISOString(),
+        });
+
+        setTimeout(() => {
+          socket.emit("set answer", "12");
+          socket.emit("set game resolution", { gameResolutionType: "DNP", teamAnswer: "12" });
+          socket.emit("set max time", 11);
+          socket.emit("start timer");
+
+          setTimeout(() => {
+            setTutorialStep(19);
+          }, 25000);
+        }, 3000);
+
+      }, 3000);
+    }, 5000);
+  };
+
+  const handleSimulation3 = () => {
+    socket.emit("clear chat");
+    socket.emit("set max time", 90);
+    let simulationConfederate = "Júlio";
+    setTutorialStep(20);
+    socket.emit("set confederate", simulationConfederate);
+    setCurrentUser("Hugo");
+    socket.emit("tutorial problem", { block: { blockName: "T_1" }, problem: "3" });
+  };
+
+  const handleTutorialStep20 = () => {
+    setTutorialStep(21);
+    let simulationConfederate = "Júlio";
+    socket.emit("typing", simulationConfederate);
+    setTimeout(() => {
+      socket.emit("typing", simulationConfederate);
+      setTimeout(() => {
+        socket.emit("chat message", {
+          user: simulationConfederate,
+          text: "O que você acha?",
+          timeStamp: new Date().toISOString(),
+        });
+        setTimeout(() => {
+          setTutorialStep(22);
+        }, 2000);
+      }, 1000);
+    }, 2000);
+  };
+
+  socket.on("chat message", (message) => {
+    if (tutorialStep === 23 && message.text.toLowerCase().includes("flecha verde para cima")) {
+      setTutorialStep(24);
+    }
+  });
+
+  const handleTutorialMessage = (message) => {
+    setShowMessageBox(true);
+    let inputPosition = messageRef.current.getBoundingClientRect();
+
+    setMessageInputStyle({
+      position: 'absolute',
+      top: inputPosition.top,
+      left: inputPosition.left,
+      width: inputPosition.width,
+      height: inputPosition.height
+    });
+
+    typeMessage(message);
+  }
+
+  function typeMessage(originalMessage, delay = 100) {
+    let newMessage = "";
+    const characters = originalMessage.split("");
+    let index = 0;
+
+    const intervalId = setInterval(() => {
+      newMessage += characters[index];
+      setNewMessage(newMessage);
+
+      index++;
+
+      if (index >= characters.length) {
+        clearInterval(intervalId);
+
+        setTimeout(() => {
+          sendButtonRef.current.classList.add('click-animation');
+
+          setTimeout(() => {
+            sendButtonRef.current.classList.remove('click-animation');
+            setShowMessageBox(false);
+            socket.emit("chat message", {
+              user: currentUser,
+              text: originalMessage,
+              timeStamp: new Date().toISOString(),
+            });
+          }, 500);
+        }, 1000);
+      }
+    }, delay);
   }
 
   return (
@@ -81,7 +292,7 @@ function Tutorial() {
       )}
       {tutorialStep === 1 && (
         <Modal>
-          <p>Bem-vindo(a) ao Jogo de Resolução de Problemas! Nesse tutorial, você vai aprender como utilizar o bate-papo e suas funcionalidades.</p>
+          <p>Bem-vindo(a) ao Bate-Papo Online de Resolução de Problemas! Nesse tutorial, você vai aprender como utilizar o bate-papo e suas funcionalidades.</p>
           <button className="btn btn-primary btn-narrow" onClick={() => setTutorialStep(2)}>
             Entendi!
           </button>
@@ -128,35 +339,98 @@ function Tutorial() {
         </Modal>
       )}
       {tutorialStep === 11 && (
-          <Modal>
-            <p>Você está jogando com</p>
-            <p class name="h2"><b>Ricardo</b></p>
-            <button ref={step11ButtonRef} className="btn btn-primary btn-narrow">
-              Pronto(a)!
-            </button>
-          </Modal>
+        <Modal>
+          <p>Você está jogando com</p>
+          <p className="h2"><b>Sérgio</b></p>
+          <button ref={readyButtonRef} className="btn btn-primary btn-narrow button-dead">
+            Pronto(a)!
+          </button>
+        </Modal>
       )}
-      {tutorialStep > 0 && !usernameSet && (
-        <div className="mb-4">
-          <form onSubmit={handleSetUsername} className="input-group">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Insira seu nome"
-              value={currentUser}
-              onChange={(e) => setCurrentUser(e.target.value)}
-            />
-            <button type="submit" className="btn btn-primary">
-              Definir Nome
-            </button>
-          </form>
-        </div>
+      {tutorialStep === 13 && (
+        <Modal>
+          <p>Para esse problema, vou digitar a mensagem: “A resposta é triângulo”. Vou te mostrar como enviar a mensagem.</p>
+          <button className="btn btn-primary btn-narrow" onClick={() => handleTutorialStep13()}>
+            Entendi!
+          </button>
+        </Modal>
       )}
-
+      {tutorialStep === 15 && (
+        <Modal>
+          <p>Agora vou mostrar outro exemplo de jogo. Essa é outra simulação de computador.</p>
+          <button className="btn btn-primary btn-narrow" onClick={() => handleSimulation2()}>
+            Entendi!
+          </button>
+        </Modal>
+      )}
+      {tutorialStep === 16 && (
+        <Modal>
+          <p>Você está jogando com</p>
+          <p className="h2"><b>César</b></p>
+          <button ref={readyButtonRef} className="btn btn-primary btn-narrow button-dead">
+            Pronto(a)!
+          </button>
+        </Modal>
+      )}
+      {tutorialStep === 17 && (
+        <Modal>
+          <p>Para esse problema, vou digitar a mensagem: “Acho que a resposta é 11”. Vou te mostrar como enviar a mensagem.</p>
+          <button className="btn btn-primary btn-narrow" onClick={() => handleTutorialStep17()}>
+            Entendi!
+          </button>
+        </Modal>
+      )}
+      {tutorialStep === 19 && (
+        <Modal>
+          <p>Agora que te mostrei como escrever e enviar mensagens, é sua vez de praticar em uma simulação de computador antes de jogar com outro(a) jogador(a). Para isso, siga as instruções que aparecerão na tela. Clique no botão “Pronto(a)!” para iniciar.          </p>
+          <button className="btn btn-primary btn-narrow" onClick={() => handleSimulation3()}>
+            Pronto(a)!
+          </button>
+        </Modal>
+      )}
+      {tutorialStep === 20 && (
+        <Modal>
+          <p>Bem-vindo(a) ao Bate-Papo Online de Resolução de Problemas!</p>
+          <p>Você está jogando com</p>
+          <p className="h2"><b>Júlio</b></p>
+          <p>Clique em “PRONTO(A)!” quando estiver pronto(a) para iniciar o jogo.”</p>
+          <button onClick={() => handleTutorialStep20()} className="btn btn-primary btn-narrow">
+            Pronto(a)!
+          </button>
+        </Modal>
+      )}
+      {tutorialStep === 22 && (
+        <Modal>
+          <p>Para esse problema, digite a seguinte mensagem: “flecha verde para cima”.</p>
+          <button className="btn btn-primary btn-narrow" onClick={() => setTutorialStep(23)}>
+            Entendi!
+          </button>
+        </Modal>
+      )}
+      {tutorialStep === 24 && (
+        <Modal>
+          <p>EXCELENTE!!!</p>
+          <button className="btn btn-primary btn-narrow" onClick={() => setTutorialStep(25)}>
+          Obrigado(a)!
+          </button>
+        </Modal>
+      )}
+      {tutorialStep === 25 && (
+        <Modal>
+          <p>Agora que você já sabe como o jogo e o envio de mensagens funcionam, você vai começar a jogar com outro(a) jogador(a). Nesse momento, o(a) jogador(a) está recebendo as mesmas instruções desse tutorial. Por favor, aguarde o(a) jogador(a) estar pronto(a) para jogar com você. Isso pode levar de 1 a 5 minutos. Quando o(a) jogador(a) estiver pronto(a), a pesquisadora te avisará e o jogo irá começar.</p>
+        </Modal>
+      )}
       {usernameSet && (
         <div className="row">
-          <ChatBox currentUser={currentUser} isAdmin={false} messageRef={messageRef} chatRef={chatRef} confederateNameRef={confederateNameRef} activityRef={activityRef} />
+          <ChatBox currentUser={currentUser} isAdmin={false} messageRef={messageRef} chatRef={chatRef} confederateNameRef={confederateNameRef} activityRef={activityRef} sendButtonRef={sendButtonRef} />
           <GameBox isAdmin={false} gamesRef={gamesRef} timerRef={timerRef} pointsRef={pointsRef} teamAnswerRef={teamAnswerRef} />
+          {showMessageBox && <input
+            type="text"
+            className="form-control me-2"
+            placeholder="Mensagem"
+            value={newMessage}
+            style={messageInputStyle}
+          />}
         </div>
       )}
     </div>
