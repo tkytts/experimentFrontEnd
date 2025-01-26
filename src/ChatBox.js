@@ -62,7 +62,7 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
       socket.off("chat cleared");
       socket.off("chimes updated");
     };
-  }, [currentUser]);
+  }, [currentUser, chimesConfig]);
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -78,7 +78,7 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
     if (newMessage.trim() === "") return;
 
     const messageObj = {
-      user: currentUser,
+      user: isAdmin? confederateName : currentUser,
       text: newMessage,
       timeStamp: new Date().toISOString(),
     };
