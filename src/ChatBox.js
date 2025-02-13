@@ -112,7 +112,7 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
 
   const handleTyping = (e) => {
     setNewMessage(e.target.value);
-    socket.emit("typing", currentUser);
+    socket.emit("typing", isAdmin ? confederateName : currentUser);
     if (!isAdmin)
       socket.emit("telemetry event", {
         user: currentUser,

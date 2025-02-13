@@ -75,6 +75,8 @@ function Experimenter() {
   const closeGameConfigModal = () => setShowGameConfigModal(false);
 
   const nextProblem = () => {
+    socket.emit("clear answer");
+
     if (currentProblem === 4) {
       socket.emit("reset timer");
       socket.emit("stop timer");
