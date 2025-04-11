@@ -12,6 +12,8 @@ function Tutorial() {
   const [currentUser, setCurrentUser] = useState("");
   const [usernameSet, setUsernameSet] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
+  const [wrongAnswer, setWrongAnswer] = useState(0);
+  const [typedMessage, setTypedMessage] = useState("");
   const [newMessage, setNewMessage] = useState("");
   const [showMessageBox, setShowMessageBox] = useState(false);
   const [messageInputStyle, setMessageInputStyle] = useState(null);
@@ -216,8 +218,16 @@ function Tutorial() {
   };
 
   socket.on("chat message", (message) => {
-    if (tutorialStep === 23 && message.text.toLowerCase().includes("flecha verde para cima")) {
-      setTutorialStep(24);
+    if (tutorialStep === 23) {
+      if (/flecha.+verde.+cima/.test(message.text)) {
+        setWrongAnswer(0);
+        setTutorialStep(24);
+      }
+      else {
+        setTypedMessage(message.text);
+        setWrongAnswer(1);
+        setTutorialStep(22);
+      }
     }
   });
 
@@ -327,7 +337,7 @@ function Tutorial() {
         </InputModal>
       )}
       {tutorialStep === 9 && (
-        <InputModal onUnderstood={() => setTutorialStep(10)} inputRef={teamAnswerRef?.current} text="Aqui você vai ver a resposta final que o(a) outro(a) jogador(a) sugerir para o problema.">
+        <InputModal onUnderstood={() => setTutorialStep(10)} inputRef={teamAnswerRef?.current} text="Aqui você vai ver a resposta final que o(a) outro(a) jogador(a) enviará para a solução do problema.">
         </InputModal>
       )}
       {tutorialStep === 10 && (
@@ -399,7 +409,7 @@ function Tutorial() {
           </button>
         </Modal>
       )}
-      {tutorialStep === 22 && (
+      {tutorialStep === 22 && !wrongAnswer && (
         <Modal>
           <p>Para esse problema, digite a seguinte mensagem: “flecha verde para cima”.</p>
           <button className="btn btn-primary btn-narrow" onClick={() => setTutorialStep(23)}>
@@ -407,11 +417,19 @@ function Tutorial() {
           </button>
         </Modal>
       )}
+      {tutorialStep === 22 && wrongAnswer && (
+        <Modal>
+          <p>A frase digitada contém um erro: você digitou “{typedMessage}” em vez de “<b>flecha verde para cima</b>”. Por favor, tente novamente digitando a frase corretamente.</p>
+          <button className="btn btn-primary btn-narrow" onClick={() => setWrongAnswer(0) }>
+            Entendi!
+          </button>
+        </Modal>
+      )}
       {tutorialStep === 24 && (
         <Modal>
           <p>EXCELENTE!!!</p>
-          <button className="btn btn-primary btn-narrow" onClick={() => setTutorialStep(25)}>
-          Obrigado(a)!
+          <button className="btn btn-primary" onClick={() => setTutorialStep(25)}>
+            Obrigado(a)!
           </button>
         </Modal>
       )}
