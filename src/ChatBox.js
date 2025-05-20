@@ -30,7 +30,11 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
       setMessages((prevMessages) => [...prevMessages, msg]);
 
       if (msg.user !== currentUser && chimesConfig?.messageReceived) {
-        new Audio("/sounds/message-received.mp3").play(); // Play sound when a message is received
+        try {
+          new Audio("/sounds/message-received.mp3").play(); // Play sound when a message is received
+        } catch (error) {
+          console.error("Failed to play audio:", error); // Optionally log the error
+        }
       }
     });
 
@@ -97,7 +101,11 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
     setNewMessage("");
 
     if (chimesConfig?.messageSent)
-      new Audio("/sounds/message-sent.mp3").play(); // Play sound when a message is sent
+      try {
+        new Audio("/sounds/message-sent.mp3").play(); // Play sound when a message is sent
+      } catch (error) {
+        console.error("Failed to play audio:", error); // Optionally log the error
+      }      
   };
 
   const handleKeyPress = (e) => {

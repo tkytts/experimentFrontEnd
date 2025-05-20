@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import ChatBox from "./ChatBox";
 import GameBox from "./GameBox";
 import io from "socket.io-client";
@@ -9,6 +10,7 @@ import InputModal from "./InputModal";
 const socket = io(config.serverUrl);
 
 function Tutorial() {
+  const navigate = useNavigate(); // Define navigate using useNavigate
   const [currentUser, setCurrentUser] = useState("");
   const [usernameSet, setUsernameSet] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
@@ -17,6 +19,7 @@ function Tutorial() {
   const [newMessage, setNewMessage] = useState("");
   const [showMessageBox, setShowMessageBox] = useState(false);
   const [messageInputStyle, setMessageInputStyle] = useState(null);
+  const [numTries, setNumTries] = useState(1);
   const currentUserRef = useRef("");
   const messageRef = useRef(null);
   const sendButtonRef = useRef(null);
@@ -31,7 +34,15 @@ function Tutorial() {
 
   useEffect(() => {
     currentUserRef.current = currentUser;
-  }, [currentUser]);
+
+    socket.on("start game", () => {
+      navigate("/participant"); // Use navigate here
+    });
+
+    return () => {
+      socket.off("start game");
+    };
+  }, [currentUser, navigate]);
 
 
   const handleTutorialStep1 = () => {
@@ -217,6 +228,11 @@ function Tutorial() {
     }, 2000);
   };
 
+  const handleTutorialStep24 = () => {
+      socket.emit("tutorial done", numTries);
+      setTutorialStep(25);
+  }
+
   socket.on("chat message", (message) => {
     if (tutorialStep === 23) {
       if (/flecha.+verde.+cima/.test(message.text)) {
@@ -224,6 +240,7 @@ function Tutorial() {
         setTutorialStep(24);
       }
       else {
+        setNumTries(numTries + 1);
         setTypedMessage(message.text);
         setWrongAnswer(1);
         setTutorialStep(22);
@@ -420,7 +437,7 @@ function Tutorial() {
       {tutorialStep === 22 && wrongAnswer && (
         <Modal>
           <p>A frase digitada contém um erro: você digitou “{typedMessage}” em vez de “<b>flecha verde para cima</b>”. Por favor, tente novamente digitando a frase corretamente.</p>
-          <button className="btn btn-primary btn-narrow" onClick={() => setWrongAnswer(0) }>
+          <button className="btn btn-primary btn-narrow" onClick={() => setWrongAnswer(0)}>
             Entendi!
           </button>
         </Modal>
@@ -428,7 +445,7 @@ function Tutorial() {
       {tutorialStep === 24 && (
         <Modal>
           <p>EXCELENTE!!!</p>
-          <button className="btn btn-primary" onClick={() => setTutorialStep(25)}>
+          <button className="btn btn-primary" onClick={() => handleTutorialStep24()}>
             Obrigado(a)!
           </button>
         </Modal>

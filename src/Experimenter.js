@@ -22,6 +22,19 @@ function Experimenter() {
   const [teamAnswer, setTeamAnswer] = useState("");
   const [currentProblem, setCurrentProblem] = useState(0);
   const [currentParticipant, setCurrentParticipant] = useState(null);
+  const [showTutorialCompleteModal, setShowTutorialCompleteModal] = useState(false);
+  const [numTries, setNumTries] = useState(1);
+
+  useEffect(() => {
+    socket.on("tutorial done", (numTries) => {
+      setNumTries(numTries);
+      setShowTutorialCompleteModal(true);
+    });
+  
+    return () => {
+      socket.off("tutorial done");
+    };
+  }, []);
 
   useEffect(() => {
     // Load confederates data from public folder
@@ -306,6 +319,13 @@ function Experimenter() {
           </div>
         </Modal>
       )}
+      {showTutorialCompleteModal && (
+      <Modal onClose={() => setShowTutorialCompleteModal(false)}>
+        <h2>Tutorial Completo</h2>
+        <p>O usuario completou o tutorial com sucesso.</p>
+        <p>O critério de domínio da tarefa foi atingido na {numTries}ª tentativa.</p>
+      </Modal>
+    )}
     </div>
   );
 }
