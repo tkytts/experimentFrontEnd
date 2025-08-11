@@ -88,6 +88,18 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
     };
     socket.emit("chat message", messageObj);
     if (!isAdmin)
+    {
+      if (typingUser !== "") {
+        socket.emit("telemetry event", {
+          user: currentUser,
+          confederate: confederateName,
+          action: "INTERRUPT",
+          text: newMessage,
+          timestamp: new Date().toISOString(),
+          x: mousePositionRef.current.x,
+          y: mousePositionRef.current.y,
+        });
+      }
       socket.emit("telemetry event", {
         user: currentUser,
         confederate: confederateName,
@@ -97,6 +109,7 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
         x: mousePositionRef.current.x,
         y: mousePositionRef.current.y,
       });
+    }
 
     setNewMessage("");
 
