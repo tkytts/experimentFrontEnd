@@ -1,5 +1,6 @@
 const config = {
-    serverUrl: "http://192.168.196.93:5000"
+    serverUrl: "/api",
+    socketUrl: "/api/socket.io"
 };
 
 export default config;

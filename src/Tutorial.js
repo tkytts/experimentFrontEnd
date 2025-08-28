@@ -7,7 +7,7 @@ import config from "./config";
 import Modal from "./Modal";
 import InputModal from "./InputModal";
 
-const socket = io(config.serverUrl);
+const socket = io({ path: config.socketUrl });
 
 function Tutorial() {
   const navigate = useNavigate(); // Define navigate using useNavigate

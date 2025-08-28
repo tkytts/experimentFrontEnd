@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import config from "./config";
 
-const socket = io(config.serverUrl);
+const socket = io({ path: '/api/socket.io' });
 
 function GameBox({ isAdmin, gamesRef, timerRef, pointsRef, teamAnswerRef }) {
   const [currentProblem, setCurrentProblem] = useState(null); // New state to store the current problem

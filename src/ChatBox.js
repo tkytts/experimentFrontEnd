@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import config from "./config";
 
-const socket = io(config.serverUrl);
+const socket = io({ path: config.socketUrl });
 
 function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef, activityRef, sendButtonRef }) {
   const [messages, setMessages] = useState([]);

@@ -5,7 +5,7 @@ import GameBox from "./GameBox";
 import config from "./config";
 import Modal from "./Modal";
 
-const socket = io(config.serverUrl);
+const socket = io({ path: config.socketUrl });
 
 function Experimenter() {
   const [confederateName, setConfederateName] = useState("");
