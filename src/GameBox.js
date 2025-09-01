@@ -68,7 +68,7 @@ function GameBox({ isAdmin, gamesRef, timerRef, pointsRef, teamAnswerRef }) {
   }, []);
 
   useEffect(() => {
-    if (countdownAudioEnabled && countdownAudioEnabled.current) {
+    if (countdownAudioEnabled) {
       if (countdown <= 10) {
         countdownAudioRef.current.play();
       } else {
