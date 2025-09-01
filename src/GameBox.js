@@ -8,7 +8,7 @@ function GameBox({ isAdmin, gamesRef, timerRef, pointsRef, teamAnswerRef }) {
   const [currentProblem, setCurrentProblem] = useState(null); // New state to store the current problem
   const [currentBlock, setCurrentBlock] = useState(null); // New state to store the current block
   const [countdown, setCountdown] = useState(null);
-  const countdownAudioRef = useRef(new Audio("/sounds/countdown.mp3")); // Reference to the countdown audio file
+  let countdownAudioRef = useRef(new Audio("/sounds/countdown.mp3")); // Reference to the countdown audio file
   const [countdownAudioEnabled, setCountdownAudioEnabled] = useState(false);
   const [teamAnswer, setTeamAnswer] = useState("");
   const [teamScore, setTeamScore] = useState(0);
@@ -70,6 +70,9 @@ function GameBox({ isAdmin, gamesRef, timerRef, pointsRef, teamAnswerRef }) {
   useEffect(() => {
     if (countdownAudioEnabled) {
       if (countdown <= 10) {
+        if (!countdownAudioRef.current)
+          countdownAudioRef.current = useRef(new Audio("/sounds/countdown.mp3"));
+
         countdownAudioRef.current.play();
       } else {
         countdownAudioRef.current.pause();
