@@ -1,14 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
-import io from "socket.io-client";
-import config from "./config";
-
-const socket = io({ path: '/api/socket.io' });
+import { useState, useEffect, useRef } from "react";
+import socket from "./socket";
 
 function GameBox({ isAdmin, gamesRef, timerRef, pointsRef, teamAnswerRef }) {
   const [currentProblem, setCurrentProblem] = useState(null); // New state to store the current problem
   const [currentBlock, setCurrentBlock] = useState(null); // New state to store the current block
   const [countdown, setCountdown] = useState(null);
-  let countdownAudioRef = useRef(new Audio("/sounds/countdown.mp3")); // Reference to the countdown audio file
+  const countdownAudioRef = useRef(new Audio("/sounds/countdown.mp3")); // Always create the ref at the top
   const [countdownAudioEnabled, setCountdownAudioEnabled] = useState(false);
   const [teamAnswer, setTeamAnswer] = useState("");
   const [teamScore, setTeamScore] = useState(0);
@@ -16,12 +13,6 @@ function GameBox({ isAdmin, gamesRef, timerRef, pointsRef, teamAnswerRef }) {
   const [isAnswerCorrect, setIsAnswerCorrect] = useState(null);
   const [pointsAwarded, setPointsAwarded] = useState(null);
   const [showResults, setShowResults] = useState(false);
-
-  socket.on("problem update", ({ block, problem }) => {
-    setCurrentBlock(block);
-    setCurrentProblem(problem);
-    setShowResults(false);
-  });
 
   useEffect(() => {
     socket.on("timer update", (newCountdown) => {
@@ -58,6 +49,12 @@ function GameBox({ isAdmin, gamesRef, timerRef, pointsRef, teamAnswerRef }) {
       }, 3000);
     });
 
+    socket.on("problem update", ({ block, problem }) => {
+      setCurrentBlock(block);
+      setCurrentProblem(problem);
+      setShowResults(false);
+    });
+
     return () => {
       socket.off("chat message");
       socket.off("chat history");
@@ -70,16 +67,19 @@ function GameBox({ isAdmin, gamesRef, timerRef, pointsRef, teamAnswerRef }) {
   useEffect(() => {
     if (countdownAudioEnabled) {
       if (countdown <= 10) {
-        if (!countdownAudioRef.current)
-          countdownAudioRef.current = useRef(new Audio("/sounds/countdown.mp3"));
-
+        // If the ref is missing, re-create the audio object directly
+        if (!countdownAudioRef.current) {
+          countdownAudioRef.current = new Audio("/sounds/countdown.mp3");
+        }
         countdownAudioRef.current.play();
       } else {
-        countdownAudioRef.current.pause();
-        countdownAudioRef.current.currentTime = 0; // Reset audio playback
+        if (countdownAudioRef.current) {
+          countdownAudioRef.current.pause();
+          countdownAudioRef.current.currentTime = 0; // Reset audio playback
+        }
       }
     }
-  }, [countdown]);
+  }, [countdown, countdownAudioEnabled]);
 
   const handleStartTimer = () => {
     socket.emit("start timer"); // Emit start timer event to server

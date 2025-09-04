@@ -2,12 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import ChatBox from "./ChatBox";
 import GameBox from "./GameBox";
-import io from "socket.io-client";
 import config from "./config";
 import Modal from "./Modal";
 import InputModal from "./InputModal";
-
-const socket = io({ path: config.socketUrl });
+import socket from "./socket";
 
 function Tutorial() {
   const navigate = useNavigate(); // Define navigate using useNavigate

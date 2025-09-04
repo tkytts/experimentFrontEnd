@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import io from "socket.io-client";
+import socket from "./socket";
 import config from "./config";
-
-const socket = io({ path: config.socketUrl });
 
 function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef, activityRef, sendButtonRef }) {
   const [messages, setMessages] = useState([]);
@@ -56,8 +54,6 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
       setChimesConfig(data);
     });
 
-    socket.emit("get chimes");
-
     return () => {
       window.removeEventListener("mousemove", updateMousePosition);
       socket.off("chat message");
@@ -78,17 +74,20 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
     scrollToBottom();
   }, [messages]); // Trigger scrolling when `messages` updates
 
+  useEffect(() => {
+    socket.emit("get chimes");
+  }, []);
+
   const handleSend = () => {
     if (newMessage.trim() === "") return;
 
     const messageObj = {
-      user: isAdmin? confederateName : currentUser,
+      user: isAdmin ? confederateName : currentUser,
       text: newMessage,
       timeStamp: new Date().toISOString(),
     };
     socket.emit("chat message", messageObj);
-    if (!isAdmin)
-    {
+    if (!isAdmin) {
       if (typingUser !== "") {
         socket.emit("telemetry event", {
           user: currentUser,
@@ -118,7 +117,7 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
         new Audio("/sounds/message-sent.mp3").play(); // Play sound when a message is sent
       } catch (error) {
         console.error("Failed to play audio:", error); // Optionally log the error
-      }      
+      }
   };
 
   const handleKeyPress = (e) => {

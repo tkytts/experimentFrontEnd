@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import io from "socket.io-client";
+import socket from "./socket";
 import ChatBox from "./ChatBox";
 import GameBox from "./GameBox";
 import config from "./config";
 import Modal from "./Modal";
-
-const socket = io({ path: config.socketUrl });
 
 function Experimenter() {
   const [confederateName, setConfederateName] = useState("");
@@ -30,7 +28,7 @@ function Experimenter() {
       setNumTries(numTries);
       setShowTutorialCompleteModal(true);
     });
-  
+
     return () => {
       socket.off("tutorial done");
     };
@@ -89,6 +87,7 @@ function Experimenter() {
 
   const nextProblem = () => {
     socket.emit("clear answer");
+    setTeamAnswer("");
 
     if (currentProblem === 4) {
       socket.emit("reset timer");
@@ -105,12 +104,15 @@ function Experimenter() {
     }
   };
 
-
   function setNextConfederate() {
     const confederates = gender === "F" ? confederatesFemaleStart : confederatesMaleStart;
     const currentIndex = confederates.findIndex(confederate => confederate.name === confederateName);
     const nextIndex = (currentIndex + 1) % confederates.length;
-    setConfederateName(confederates[nextIndex].name);
+
+    if (nextIndex === 0)
+      socket.emit("game ended");
+    else
+      setConfederateName(confederates[nextIndex].name);
   }
 
   const openResolutionModal = () => {
@@ -320,12 +322,12 @@ function Experimenter() {
         </Modal>
       )}
       {showTutorialCompleteModal && (
-      <Modal onClose={() => setShowTutorialCompleteModal(false)}>
-        <h2>Tutorial Completo</h2>
-        <p>O usuario completou o tutorial com sucesso.</p>
-        <p>O critério de domínio da tarefa foi atingido na {numTries}ª tentativa.</p>
-      </Modal>
-    )}
+        <Modal onClose={() => setShowTutorialCompleteModal(false)}>
+          <h2>Tutorial Completo</h2>
+          <p>O usuario completou o tutorial com sucesso.</p>
+          <p>O critério de domínio da tarefa foi atingido na {numTries}ª tentativa.</p>
+        </Modal>
+      )}
     </div>
   );
 }

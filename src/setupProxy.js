@@ -5,8 +5,7 @@ module.exports = function(app) {
     '/api',
     createProxyMiddleware({
       target: 'http://localhost:5000',
-      changeOrigin: true,
-      ws: true, // Enable websocket proxying
+      changeOrigin: true
     })
   );
 };

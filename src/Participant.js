@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import ChatBox from "./ChatBox";
 import GameBox from "./GameBox";
 import io from "socket.io-client";
 import config from "./config";
+import Modal from "./Modal";
 
 const socket = io({ path: config.socketUrl });
 
@@ -12,15 +13,26 @@ function Participant() {
   const [usernameSet, setUsernameSet] = useState(false);
   const [confederateName, setConfederateName] = useState("");
   const [ready, setReady] = useState(false);
+  const [showGameEndedModal, setShowGameEndedModal] = useState(false);
 
   useEffect(() => {
     currentUserRef.current = currentUser;
-  }, [currentUser]);
 
-  socket.on("new confederate", (confederateName) => {
-    setConfederateName(confederateName);
-    setReady(false);
-  });
+    socket.on("new confederate", (confederateName) => {
+      setConfederateName(confederateName);
+      setReady(false);
+    });
+
+    socket.on("show end modal", () => {
+      setShowGameEndedModal(true);
+    });
+
+    return () => {
+      socket.off("new confederate");
+      socket.off("show end modal");
+    };
+
+  }, [currentUser]);
 
   const handleSetUsername = (e) => {
     e.preventDefault();
@@ -57,7 +69,7 @@ function Participant() {
         </div>
       )}
 
-      {usernameSet && !confederateName && (
+      {usernameSet && !confederateName && !showGameEndedModal && (
         <div className="modal" style={modalStyle}>
           <div className="modal-content" style={modalContentStyle}>
             <p>Aguardando o(a) outro(a) jogador(a) ficar pronto(a).</p>
@@ -68,9 +80,9 @@ function Participant() {
       {usernameSet && confederateName && !ready && (
         <div className="modal" style={modalStyle}>
           <div className="modal-content" style={modalContentStyle}>
-          <p>Você está jogando com</p>
-          <p className="h2"><b>{confederateName}</b></p>
-          <p>Clique em “PRONTO(A)!” quando estiver pronto(a) para iniciar o jogo.”</p>
+            <p>Você está jogando com</p>
+            <p className="h2"><b>{confederateName}</b></p>
+            <p>Clique em “PRONTO(A)!” quando estiver pronto(a) para iniciar o jogo.”</p>
             <button className="btn btn-primary btn-narrow" onClick={handleReady}>
               Pronto(a)!
             </button>
@@ -84,6 +96,11 @@ function Participant() {
           <GameBox isAdmin={false} />
         </div>
       )}
+      {showGameEndedModal && (
+        <Modal>
+          <h2>Muito obrigada por participar!</h2>
+          <p>Por favor, aguarde. A pesquisadora retornará para falar com você dentro de alguns minutos.</p>
+        </Modal>)}
     </div>
   );
 }
