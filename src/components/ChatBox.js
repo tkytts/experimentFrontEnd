@@ -14,7 +14,6 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
   const typingTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
   
-
   useEffect(() => {
     const updateMousePosition = (e) => {
       mousePositionRef.current = { x: e.clientX, y: e.clientY };
