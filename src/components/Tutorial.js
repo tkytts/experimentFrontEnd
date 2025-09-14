@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import ChatBox from "./ChatBox";
 import GameBox from "./GameBox";
-import config from "./config";
 import Modal from "./Modal";
 import InputModal from "./InputModal";
-import socket from "./socket";
+import socket from "../socket";
+import { Trans, useTranslation } from "react-i18next";
 
 function Tutorial() {
   const navigate = useNavigate(); // Define navigate using useNavigate
@@ -29,6 +29,7 @@ function Tutorial() {
   const pointsRef = useRef(null);
   const teamAnswerRef = useRef(null);
   const readyButtonRef = useRef(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     currentUserRef.current = currentUser;
@@ -44,7 +45,7 @@ function Tutorial() {
 
 
   const handleTutorialStep1 = () => {
-    setCurrentUser("Seu Nome");
+    setCurrentUser(t('your_name'));
     setUsernameSet(true);
     socket.emit("set max time", 90);
     setTutorialStep(1);
@@ -57,10 +58,10 @@ function Tutorial() {
   };
 
   const handleSimulation1 = () => {
-    let simulationConfederate = "Sérgio";
+    let simulationConfederate = t('tutorial_confederate_1');
     setTutorialStep(11);
     socket.emit("set confederate", simulationConfederate);
-    setCurrentUser("Flávia");
+    setCurrentUser(t('tutorial_participant_1'));
     socket.emit("tutorial problem", { block: { blockName: "T_1" }, problem: "1" });
 
     setTimeout(() => {
@@ -79,7 +80,7 @@ function Tutorial() {
           setTimeout(() => {
             socket.emit("chat message", {
               user: simulationConfederate,
-              text: "O que você acha?",
+              text: t('what_do_you_think'),
               timeStamp: new Date().toISOString(),
             });
             socket.emit("stop timer");
@@ -93,11 +94,11 @@ function Tutorial() {
   }
 
   const handleTutorialStep13 = () => {
-    let simulationConfederate = "Sérgio";
+    let simulationConfederate = t('tutorial_confederate_1');
     socket.emit("set max time", 70);
     socket.emit("start timer");
     setTutorialStep(14);
-    handleTutorialMessage("A resposta é triângulo");
+    handleTutorialMessage(t('the_answer_is_triangle'));
 
     setTimeout(() => {
       socket.emit("typing", simulationConfederate);
@@ -106,13 +107,13 @@ function Tutorial() {
       setTimeout(() => {
         socket.emit("chat message", {
           user: simulationConfederate,
-          text: "Sim, acho que você está certa!",
+          text: t('yes_i_think_you_are_right'),
           timeStamp: new Date().toISOString(),
         });
 
         setTimeout(() => {
-          socket.emit("set answer", "triângulo");
-          socket.emit("set game resolution", { gameResolutionType: "AP", teamAnswer: "triângulo" });
+          socket.emit("set answer", t('triangle'));
+          socket.emit("set game resolution", { gameResolutionType: "AP", teamAnswer: t('triangle') });
           socket.emit("set max time", 11);
           socket.emit("start timer");
 
@@ -129,10 +130,10 @@ function Tutorial() {
     socket.emit("reset points");
     socket.emit("clear chat");
     socket.emit("set max time", 90);
-    let simulationConfederate = "César";
+    let simulationConfederate = t('tutorial_confederate_2');
     setTutorialStep(16);
     socket.emit("set confederate", simulationConfederate);
-    setCurrentUser("Ana");
+    setCurrentUser(t('tutorial_participant_2'));
     socket.emit("tutorial problem", { block: { blockName: "T_1" }, problem: "2" });
 
     setTimeout(() => {
@@ -151,7 +152,7 @@ function Tutorial() {
           setTimeout(() => {
             socket.emit("chat message", {
               user: simulationConfederate,
-              text: "Em qual opção você está pensando?",
+              text: t('which_option'),
               timeStamp: new Date().toISOString(),
             });
             socket.emit("stop timer");
@@ -165,11 +166,11 @@ function Tutorial() {
   };
 
   const handleTutorialStep17 = () => {
-    let simulationConfederate = "César";
+    let simulationConfederate = t('tutorial_confederate_2');
     socket.emit("set max time", 70);
     socket.emit("start timer");
     setTutorialStep(18);
-    handleTutorialMessage("Acho que a resposta é 11");
+    handleTutorialMessage(t('i_think_the_answer_is_11'));
 
     setTimeout(() => {
       socket.emit("typing", simulationConfederate);
@@ -178,7 +179,7 @@ function Tutorial() {
       setTimeout(() => {
         socket.emit("chat message", {
           user: simulationConfederate,
-          text: "Eu discordo... acho que é 12!!",
+          text: t('i_disagree_i_think_its_12'),
           timeStamp: new Date().toISOString(),
         });
 
@@ -200,23 +201,23 @@ function Tutorial() {
   const handleSimulation3 = () => {
     socket.emit("clear chat");
     socket.emit("set max time", 90);
-    let simulationConfederate = "Júlio";
+    let simulationConfederate = t('tutorial_confederate_3');
     setTutorialStep(20);
     socket.emit("set confederate", simulationConfederate);
-    setCurrentUser("Hugo");
+    setCurrentUser(t('tutorial_participant_3'));
     socket.emit("tutorial problem", { block: { blockName: "T_1" }, problem: "3" });
   };
 
   const handleTutorialStep20 = () => {
     setTutorialStep(21);
-    let simulationConfederate = "Júlio";
+    let simulationConfederate = t('tutorial_confederate_3');
     socket.emit("typing", simulationConfederate);
     setTimeout(() => {
       socket.emit("typing", simulationConfederate);
       setTimeout(() => {
         socket.emit("chat message", {
           user: simulationConfederate,
-          text: "O que você acha?",
+          text: t('what_do_you_think'),
           timeStamp: new Date().toISOString(),
         });
         setTimeout(() => {
@@ -227,17 +228,19 @@ function Tutorial() {
   };
 
   const handleTutorialStep24 = () => {
-      socket.emit("tutorial done", numTries);
-      setTutorialStep(25);
+    socket.emit("tutorial done", numTries);
+    setTutorialStep(25);
   }
 
   socket.on("chat message", (message) => {
     if (tutorialStep === 23) {
-      if (/flecha.+verde.+cima/.test(message.text)) {
+      // Compare normalized message with the translated answer
+      const expected = t('arrow_up_green').toLowerCase().replace(/\s+/g, '');
+      const received = message.text.toLowerCase().replace(/\s+/g, '');
+      if (received === expected) {
         setWrongAnswer(0);
         setTutorialStep(24);
-      }
-      else {
+      } else {
         setNumTries(numTries + 1);
         setTypedMessage(message.text);
         setWrongAnswer(1);
@@ -286,6 +289,11 @@ function Tutorial() {
               text: originalMessage,
               timeStamp: new Date().toISOString(),
             });
+            try {
+              new Audio("/sounds/message-sent.mp3").play(); // Play sound when a message is sent
+            } catch (error) {
+              console.error("Failed to play audio:", error); // Optionally log the error
+            }
           }, 500);
         }, 1000);
       }
@@ -294,163 +302,176 @@ function Tutorial() {
 
   return (
     <div className="container mt-4">
-      <h1 className="text-center mb-4">Bate-Papo Online de Resolução de Problemas</h1>
+      <h1 className="text-center mb-4">{t('title')}</h1>
       {tutorialStep === 0 && (
         <div className="mb-4" style={{ textAlign: "left" }}>
-          <p>Bem-vindo(a)!</p>
-          <p>Muito obrigada por participar do estudo.
-            <br /> O objetivo desta pesquisa é compreender como as pessoas resolvem problemas durante atividades (que, daqui para frente, chamaremos de jogos).
-            <br /> Você usará este computador para interagir com outro(a) participante (que chamaremos de jogador(a)) em um bate-papo online.</p>
-          <p>Você e o(a) outro(a) jogador(a) participarão de jogos cooperativos e ganharão pontos ao resolverem os problemas corretamente.
-            <br /> Você e o(a) outro(a) jogador(a) verão telas idênticas, e o(a) outro(a) jogador(a) enviará as respostas finais dos problemas para a pesquisadora.</p>
-          <p>Sua missão é ajudar o(a) outro(a) jogador(a) a resolver os problemas, usando o bate-papo para se comunicar com ele(a).
-            <br /> Vocês receberão instruções sobre como usar o bate-papo neste tutorial. Para isto, siga as instruções que aparecerão na tela.</p>
+          <p>{t('welcome')}</p>
+          <Trans i18nKey="tutorial_intro" components={{ p: <p /> }} />
         </div>
       )}
       {tutorialStep === 0 && (
         <div className="mb-4" style={{ textAlign: "center" }}>
-          <p>Clique no botão “Pronto(a)!” para iniciar o tutorial!</p>
+          <p>{t('start_tutorial')}</p>
           <button className="btn btn-primary btn-narrow" onClick={handleTutorialStep1}>
-            Pronto(a)!
+            {t('ready')}
           </button>
         </div>
       )}
       {tutorialStep === 1 && (
         <Modal>
-          <p>Bem-vindo(a) ao Bate-Papo Online de Resolução de Problemas! Nesse tutorial, você vai aprender como utilizar o bate-papo e suas funcionalidades.</p>
-          <button className="btn btn-primary btn-narrow" onClick={() => setTutorialStep(2)}>
-            Entendi!
+          <p>{t('tutorial_step1')}</p>
+          <button
+            className="btn btn-primary btn-narrow"
+            style={{ minWidth: '120px', width: '120px', textAlign: 'center' }}
+            onClick={() => setTutorialStep(2)}>
+            {t('understood')}
           </button>
         </Modal>
       )}
       {tutorialStep === 2 && (
-        <InputModal onUnderstood={() => setTutorialStep(3)} inputRef={messageRef?.current} text="Essa é a caixa de texto. Digite sua mensagem aqui e aperte o botão “Enviar” ou a tecla “Enter” para enviar mensagens ao(à) outro(a) jogador(a).">
-        </InputModal>
+        <InputModal onUnderstood={() => setTutorialStep(3)} inputRef={messageRef?.current} text={t('inputmodal_2')} />
       )}
       {tutorialStep === 3 && (
-        <InputModal onUnderstood={() => setTutorialStep(4)} inputRef={chatRef?.current} text="Esse é o campo de histórico de mensagens. Todas as mensagens enviadas e recebidas aparecerão aqui. Você vai ouvir um som quando o(a) outro(a) jogador(a) te enviar uma mensagem e quando sua mensagem for enviada ao(à) outro(a) jogador(a).">
-        </InputModal>
+        <InputModal onUnderstood={() => setTutorialStep(4)} inputRef={chatRef?.current} text={t('inputmodal_3')} />
       )}
       {tutorialStep === 4 && (
-        <InputModal onUnderstood={() => setTutorialStep(5)} inputRef={confederateNameRef?.current} text="Aqui você vai ver o nome do(a) outro(a) jogador(a).">
-        </InputModal>
+        <InputModal onUnderstood={() => setTutorialStep(5)} inputRef={confederateNameRef?.current} text={t('inputmodal_4')} />
       )}
       {tutorialStep === 5 && (
-        <InputModal onUnderstood={() => setTutorialStep(6)} inputRef={activityRef?.current} text="Você vai poder acompanhar a atividade do(a) outro(a) jogador(a). Uma mensagem te informará quando ele(a) estiver digitando.">
-        </InputModal>
+        <InputModal onUnderstood={() => setTutorialStep(6)} inputRef={activityRef?.current} text={t('inputmodal_5')} />
       )}
       {tutorialStep === 6 && (
-        <InputModal onUnderstood={() => setTutorialStep(7)} inputRef={gamesRef?.current} text="Essa a tela dos jogos. Você e o(a) outro(a) jogador(a) verão os mesmos jogos, que poderão ter diferentes níveis de dificuldade e incluir atividades de resolução de problemas com várias combinações e padrões de números, formas, cores ou letras. Sua missão é resolver o problema de forma cooperativa com o(a) outro(a) jogador(a), usando o bate-papo para conversar com ele(a).">
-        </InputModal>
+        <InputModal onUnderstood={() => setTutorialStep(7)} inputRef={gamesRef?.current} text={t('inputmodal_6')} />
       )}
       {tutorialStep === 7 && (
-        <InputModal onUnderstood={() => setTutorialStep(8)} inputRef={timerRef?.current} text="Esse é o cronômetro de contagem regressiva. O tempo restante que vocês terão para resolver o problema vai aparecer aqui.">
-        </InputModal>
+        <InputModal onUnderstood={() => setTutorialStep(8)} inputRef={timerRef?.current} text={t('inputmodal_7')} />
       )}
       {tutorialStep === 8 && (
-        <InputModal onUnderstood={() => setTutorialStep(9)} inputRef={pointsRef?.current} text="Aqui você vai ver o total de pontos que acumulou em todos os jogos que participou.">
-        </InputModal>
+        <InputModal onUnderstood={() => setTutorialStep(9)} inputRef={pointsRef?.current} text={t('inputmodal_8')} />
       )}
       {tutorialStep === 9 && (
-        <InputModal onUnderstood={() => setTutorialStep(10)} inputRef={teamAnswerRef?.current} text="Aqui você vai ver a resposta final que o(a) outro(a) jogador(a) enviará para a solução do problema.">
-        </InputModal>
+        <InputModal onUnderstood={() => setTutorialStep(10)} inputRef={teamAnswerRef?.current} text={t('inputmodal_9')} />
       )}
       {tutorialStep === 10 && (
         <Modal>
-          <p>Agora que você já sabe como o bate-papo funciona, vou te mostrar um exemplo de jogo. Depois, você vai praticar com alguns jogos antes de começar. Essa é uma simulação de computador, então não é um(a) jogador(a) real. Por enquanto, você só precisa observar o exemplo.</p>
-          <button className="btn btn-primary btn-narrow" onClick={() => handleSimulation1()}>
-            Entendi!
+          <p>{t('tutorial_step10')}</p>
+          <button
+            className="btn btn-primary btn-narrow"
+            style={{ minWidth: '120px', width: '120px', textAlign: 'center' }}
+            onClick={() => handleSimulation1()}>
+            {t('understood')}
           </button>
         </Modal>
       )}
       {tutorialStep === 11 && (
         <Modal>
-          <p>Você está jogando com</p>
-          <p className="h2"><b>Sérgio</b></p>
+          <p>{t('playing_with')}</p>
+          <p className="h2"><b>{t('tutorial_confederate_1')}</b></p>
           <button ref={readyButtonRef} className="btn btn-primary btn-narrow button-dead">
-            Pronto(a)!
+            {t('ready')}
           </button>
         </Modal>
       )}
       {tutorialStep === 13 && (
         <Modal>
-          <p>Para esse problema, vou digitar a mensagem: “A resposta é triângulo”. Vou te mostrar como enviar a mensagem.</p>
-          <button className="btn btn-primary btn-narrow" onClick={() => handleTutorialStep13()}>
-            Entendi!
+          <p>{t('tutorial_step13')}</p>
+          <button
+            className="btn btn-primary btn-narrow"
+            style={{ minWidth: '120px', width: '120px', textAlign: 'center' }}
+            onClick={() => handleTutorialStep13()}>
+            {t('understood')}
           </button>
         </Modal>
       )}
       {tutorialStep === 15 && (
         <Modal>
-          <p>Agora vou mostrar outro exemplo de jogo. Essa é outra simulação de computador.</p>
-          <button className="btn btn-primary btn-narrow" onClick={() => handleSimulation2()}>
-            Entendi!
+          <p>{t('tutorial_step15')}</p>
+          <button
+            className="btn btn-primary btn-narrow"
+            style={{ minWidth: '120px', width: '120px', textAlign: 'center' }}
+            onClick={() => handleSimulation2()}>
+            {t('understood')}
           </button>
         </Modal>
       )}
       {tutorialStep === 16 && (
         <Modal>
-          <p>Você está jogando com</p>
-          <p className="h2"><b>César</b></p>
+          <p>{t('playing_with')}</p>
+          <p className="h2"><b>{t("tutorial_confederate_2")}</b></p>
           <button ref={readyButtonRef} className="btn btn-primary btn-narrow button-dead">
-            Pronto(a)!
+            {t('ready')}
           </button>
         </Modal>
       )}
       {tutorialStep === 17 && (
         <Modal>
-          <p>Para esse problema, vou digitar a mensagem: “Acho que a resposta é 11”. Vou te mostrar como enviar a mensagem.</p>
-          <button className="btn btn-primary btn-narrow" onClick={() => handleTutorialStep17()}>
-            Entendi!
+          <p>{t('tutorial_step17')}</p>
+          <button
+            className="btn btn-primary btn-narrow"
+            style={{ minWidth: '120px', width: '120px', textAlign: 'center' }}
+            onClick={() => handleTutorialStep17()}>
+            {t('understood')}
           </button>
         </Modal>
       )}
       {tutorialStep === 19 && (
         <Modal>
-          <p>Agora que te mostrei como escrever e enviar mensagens, é sua vez de praticar em uma simulação de computador antes de jogar com outro(a) jogador(a). Para isso, siga as instruções que aparecerão na tela. Clique no botão “Pronto(a)!” para iniciar.          </p>
-          <button className="btn btn-primary btn-narrow" onClick={() => handleSimulation3()}>
-            Pronto(a)!
+          <p>{t('tutorial_step19')}</p>
+          <button
+            className="btn btn-primary btn-narrow"
+            style={{ minWidth: '120px', width: '120px', textAlign: 'center' }}
+            onClick={() => handleSimulation3()}>
+            {t('ready')}
           </button>
         </Modal>
       )}
       {tutorialStep === 20 && (
         <Modal>
-          <p>Bem-vindo(a) ao Bate-Papo Online de Resolução de Problemas!</p>
-          <p>Você está jogando com</p>
-          <p className="h2"><b>Júlio</b></p>
-          <p>Clique em “PRONTO(A)!” quando estiver pronto(a) para iniciar o jogo.”</p>
+          <p>{t('tutorial_step20_1')}</p>
+          <p>{t('tutorial_step20_2')}</p>
+          <p className="h2"><b>{t("tutorial_confederate_3")}</b></p>
+          <p>{t('tutorial_step20_3')}</p>
           <button onClick={() => handleTutorialStep20()} className="btn btn-primary btn-narrow">
-            Pronto(a)!
+            {t('ready')}
           </button>
         </Modal>
       )}
       {tutorialStep === 22 && !wrongAnswer && (
         <Modal>
-          <p>Para esse problema, digite a seguinte mensagem: “flecha verde para cima”.</p>
-          <button className="btn btn-primary btn-narrow" onClick={() => setTutorialStep(23)}>
-            Entendi!
+          <p>{t('tutorial_step22')}</p>
+          <button
+            className="btn btn-primary btn-narrow"
+            style={{ minWidth: '120px', width: '120px', textAlign: 'center' }}
+            onClick={() => setTutorialStep(23)}>
+            {t('understood')}
           </button>
         </Modal>
       )}
       {tutorialStep === 22 && wrongAnswer && (
         <Modal>
-          <p>A frase digitada contém um erro: você digitou “{typedMessage}” em vez de “<b>flecha verde para cima</b>”. Por favor, tente novamente digitando a frase corretamente.</p>
-          <button className="btn btn-primary btn-narrow" onClick={() => setWrongAnswer(0)}>
-            Entendi!
+          <Trans i18nKey="tutorial_step22_wrong" values={{ typedMessage }} components={{ b: <b /> }} />
+          <button
+            className="btn btn-primary btn-narrow"
+            style={{ minWidth: '120px', width: '120px', textAlign: 'center' }}
+            onClick={() => setWrongAnswer(0)}>
+            {t('understood')}
           </button>
         </Modal>
       )}
       {tutorialStep === 24 && (
         <Modal>
-          <p>EXCELENTE!!!</p>
-          <button className="btn btn-primary" onClick={() => handleTutorialStep24()}>
-            Obrigado(a)!
+          <p>{t('excellent')}</p>
+          <button
+            className="btn btn-primary btn-narrow"
+            style={{ minWidth: '120px', width: '120px', textAlign: 'center' }}
+            onClick={() => handleTutorialStep24()}>
+            {t('thanks')}
           </button>
         </Modal>
       )}
       {tutorialStep === 25 && (
         <Modal>
-          <p>Agora que você já sabe como o jogo e o envio de mensagens funcionam, você vai começar a jogar com outro(a) jogador(a). Nesse momento, o(a) jogador(a) está recebendo as mesmas instruções desse tutorial. Por favor, aguarde o(a) jogador(a) estar pronto(a) para jogar com você. Isso pode levar de 1 a 5 minutos. Quando o(a) jogador(a) estiver pronto(a), a pesquisadora te avisará e o jogo irá começar.</p>
+          <p>{t('tutorial_step25')}</p>
         </Modal>
       )}
       {usernameSet && (

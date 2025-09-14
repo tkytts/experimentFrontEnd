@@ -1,7 +1,8 @@
-import React from 'react';
+import { useTranslation } from "react-i18next";
 
 const InputModal = ({ onUnderstood, inputRef, text }) => {
     const inputPosition = inputRef.getBoundingClientRect();
+    const { t } = useTranslation();
 
     const overlayStyle = {
         position: 'fixed',
@@ -53,15 +54,27 @@ const InputModal = ({ onUnderstood, inputRef, text }) => {
         transform: 'rotate(180deg)', // Rotate the arrow 180 degrees
     };
 
+    const buttonWrapperStyle = {
+        display: 'flex',
+        justifyContent: 'center',
+        marginTop: '10px',
+    };
+
     return (
         <div>
             <div style={overlayStyle}></div>
             <div style={customStyle}></div>
             <div style={textBoxStyle}>
                 <p>{text}</p>
-                <button className="btn btn-primary btn-narrow" onClick={onUnderstood}>
-                    Entendi!
-                </button>
+                <div style={buttonWrapperStyle}>
+                    <button
+                        className="btn btn-primary"
+                        style={{ minWidth: '120px', width: '120px', textAlign: 'center' }}
+                        onClick={onUnderstood}
+                    >
+                        {t("understood")}
+                    </button>
+                </div>
             </div>
             <div style={arrowStyle}></div>
         </div>

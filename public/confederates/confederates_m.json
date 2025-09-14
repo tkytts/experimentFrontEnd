@@ -1,12 +1,12 @@
 [
-  {"order": 1, "name": "B‎ ", "gender": "M"},
-  {"order": 2, "name": "B‎ ‎ ", "gender": "F"},
-  {"order": 3, "name": "B‎ ‎ ‎ ", "gender": "M"},
-  {"order": 4, "name": "B‎ ‎ ‎ ‎ ", "gender": "F"},
-  {"order": 5, "name": "B‎ ‎ ‎ ‎ ‎ ", "gender": "M"},
-  {"order": 6, "name": "B‎ ‎ ‎ ‎ ‎ ‎ ", "gender": "F"},
-  {"order": 7, "name": "B‎ ‎ ‎ ‎ ‎ ‎ ‎ ", "gender": "M"},
-  {"order": 8, "name": "B‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ", "gender": "F"},
-  {"order": 9, "name": "B‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ", "gender": "M"},
-  {"order": 10, "name": "B‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ", "gender": "F"}
+  {"order": 1, "name": "B‎", "gender": "M"},
+  {"order": 2, "name": "B‎ ‎", "gender": "F"},
+  {"order": 3, "name": "B‎ ‎ ‎", "gender": "M"},
+  {"order": 4, "name": "B‎ ‎ ‎ ‎", "gender": "F"},
+  {"order": 5, "name": "B‎ ‎ ‎ ‎ ‎", "gender": "M"},
+  {"order": 6, "name": "B‎ ‎ ‎ ‎ ‎ ‎", "gender": "F"},
+  {"order": 7, "name": "B‎ ‎ ‎ ‎ ‎ ‎ ‎", "gender": "M"},
+  {"order": 8, "name": "B‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎", "gender": "F"},
+  {"order": 9, "name": "B‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎", "gender": "M"},
+  {"order": 10, "name": "B‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎", "gender": "F"}
 ]

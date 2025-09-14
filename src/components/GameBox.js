@@ -1,26 +1,36 @@
 import { useState, useEffect, useRef } from "react";
-import socket from "./socket";
+import socket from "../socket";
+import { useChimesConfig } from "../context/ChimesConfigContext";
+import { useTranslation } from "react-i18next";
 
 function GameBox({ isAdmin, gamesRef, timerRef, pointsRef, teamAnswerRef }) {
+  const { t } = useTranslation();
   const [currentProblem, setCurrentProblem] = useState(null); // New state to store the current problem
   const [currentBlock, setCurrentBlock] = useState(null); // New state to store the current block
   const [countdown, setCountdown] = useState(null);
-  const countdownAudioRef = useRef(new Audio("/sounds/countdown.mp3")); // Always create the ref at the top
-  const [countdownAudioEnabled, setCountdownAudioEnabled] = useState(false);
   const [teamAnswer, setTeamAnswer] = useState("");
   const [teamScore, setTeamScore] = useState(0);
   const [finalAnswer, setFinalAnswer] = useState("");
   const [isAnswerCorrect, setIsAnswerCorrect] = useState(null);
   const [pointsAwarded, setPointsAwarded] = useState(null);
   const [showResults, setShowResults] = useState(false);
+  const [userInteracted, setUserInteracted] = useState(false);
+  const { chimesConfig } = useChimesConfig();
+  const countdownAudioRef = useRef(new Audio("/sounds/countdown.mp3")); // Always create the ref at the top
+
+  useEffect(() => {
+    const handleUserInteraction = () => setUserInteracted(true);
+    window.addEventListener("click", handleUserInteraction, { once: true });
+    window.addEventListener("keydown", handleUserInteraction, { once: true });
+    return () => {
+      window.removeEventListener("click", handleUserInteraction);
+      window.removeEventListener("keydown", handleUserInteraction);
+    };
+  }, []);
 
   useEffect(() => {
     socket.on("timer update", (newCountdown) => {
       setCountdown(newCountdown);
-    });
-
-    socket.on("chimes updated", (data) => {
-      setCountdownAudioEnabled(data?.timer ?? false);
     });
 
     socket.on("set answer", (answer) => {
@@ -65,13 +75,16 @@ function GameBox({ isAdmin, gamesRef, timerRef, pointsRef, teamAnswerRef }) {
   }, []);
 
   useEffect(() => {
-    if (countdownAudioEnabled) {
-      if (countdown <= 10) {
+    if (chimesConfig?.timer && userInteracted) {
+      let gameIsLive = currentBlock && currentProblem;
+      if (gameIsLive && countdown <= 10) {
         // If the ref is missing, re-create the audio object directly
         if (!countdownAudioRef.current) {
           countdownAudioRef.current = new Audio("/sounds/countdown.mp3");
         }
-        countdownAudioRef.current.play();
+        countdownAudioRef.current.play().catch((error) => {
+          console.error("Failed to play countdown audio:", error);
+        });
       } else {
         if (countdownAudioRef.current) {
           countdownAudioRef.current.pause();
@@ -79,7 +92,7 @@ function GameBox({ isAdmin, gamesRef, timerRef, pointsRef, teamAnswerRef }) {
         }
       }
     }
-  }, [countdown, countdownAudioEnabled]);
+  }, [countdown, chimesConfig, userInteracted]);
 
   const handleStartTimer = () => {
     socket.emit("start timer"); // Emit start timer event to server
@@ -101,7 +114,7 @@ function GameBox({ isAdmin, gamesRef, timerRef, pointsRef, teamAnswerRef }) {
     <div className="col-md-6">
       <div className="card">
         <div className="card-body">
-          <p className="mb-3">Encontrem a solução para o problema:</p>
+          <p className="mb-3">{t('find_the_solution_to_the_problem')}:</p>
           <div className="fs-2 mb-3" ref={gamesRef}>
             {currentBlock && currentProblem ? (
               <img
@@ -111,34 +124,34 @@ function GameBox({ isAdmin, gamesRef, timerRef, pointsRef, teamAnswerRef }) {
                 style={{ maxWidth: "100%", height: "auto" }}
               />
             ) : (
-              "Carregando problema..."
+              t('loading_problem')
             )}
           </div>
-          {showResults && (<p className="mb-1"><b>A resposta do time foi {finalAnswer}</b></p>)}
+          {showResults && (<p className="mb-1"><b>{t('team_answer_was')} {finalAnswer}</b></p>)}
           {showResults && isAnswerCorrect != null && (
-            <p className="mb-1"><b>A resposta do time estava {isAnswerCorrect ? "correta" : "incorreta"}</b></p>
+            <p className="mb-1"><b>{t('the_answer_was')} {isAnswerCorrect ? t('correct') : t('incorrect')}</b></p>
           )}
           {showResults && pointsAwarded != null && (
-            <p className="mb-1"><b>Vocês ganharam {pointsAwarded} pontos</b></p>
+            <p className="mb-1"><b>{t('you_earned_points', { count: pointsAwarded })}</b></p>
           )}
           <p
             className={`mt-3 ${countdown === 0 ? "text-danger" : ""} ${countdown <= 10 ? "flash-red" : ""
               }`}
             ref={timerRef}
           >
-            {countdown > 0 ? `Restam ${countdown} segundos` : <b>O tempo acabou</b>}
+            {countdown > 0 ? (countdown == 1 ? t('1_second_left') : t('n_seconds_left', {count: countdown})) : <b>{t('time_is_up')}</b>}
           </p>
-          <p className="mb-1" ref={teamAnswerRef}><b>Resposta do Time:</b> {teamAnswer}</p>
-          <p className="mb-1" ref={pointsRef}><b>Pontos:</b> {teamScore}</p>
+          <p className="mb-1" ref={teamAnswerRef}><b>{t('team_answer')}:</b> {teamAnswer}</p>
+          <p className="mb-1" ref={pointsRef}><b>{t('points')}:</b> {teamScore}</p>
 
           {isAdmin && (<div><button className="btn btn-primary" onClick={handleStartTimer}>
-            Iniciar Timer
+            {t('start_timer')}
           </button>
             <button className="btn btn-danger" onClick={handleStopTimer}>
-              Pausar Timer
+              {t('stop_timer')}
             </button>
             <button className="btn btn-secondary" onClick={handleResetTimer}>
-              Resetar Timer
+              {t('reset_timer')}
             </button></div>)}
         </div>
       </div>

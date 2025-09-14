@@ -1,12 +1,14 @@
-import React from 'react';
+import { useTranslation } from "react-i18next";
 
 const Modal = ({ children, onClose }) => {
+  const { t } = useTranslation();
+  
   return (
     <div className="modal" style={modalStyle}>
       <div className="modal-content" style={modalContentStyle}>
         {children}
         {onClose && (<button className="btn btn-secondary btn-narrow" onClick={onClose}>
-          Fechar
+          {t("close")}
         </button>)}
       </div>
     </div>

@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import ChatBox from "./ChatBox";
 import GameBox from "./GameBox";
 import io from "socket.io-client";
-import config from "./config";
+import config from "../config";
 import Modal from "./Modal";
+import { useTranslation } from "react-i18next";
 
 const socket = io({ path: config.socketUrl });
 
@@ -14,6 +15,7 @@ function Participant() {
   const [confederateName, setConfederateName] = useState("");
   const [ready, setReady] = useState(false);
   const [showGameEndedModal, setShowGameEndedModal] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     currentUserRef.current = currentUser;
@@ -50,7 +52,7 @@ function Participant() {
 
   return (
     <div className="container mt-4">
-      <h1 className="text-center mb-4">Bate-Papo Online de Resolução de Problemas</h1>
+      <h1 className="text-center mb-4">{t('title')}</h1>
 
       {!usernameSet && (
         <div className="mb-4">
@@ -63,7 +65,7 @@ function Participant() {
               onChange={(e) => setCurrentUser(e.target.value)}
             />
             <button type="submit" className="btn btn-primary">
-              Definir Nome
+              {t('set_name')}
             </button>
           </form>
         </div>
@@ -72,7 +74,7 @@ function Participant() {
       {usernameSet && !confederateName && !showGameEndedModal && (
         <div className="modal" style={modalStyle}>
           <div className="modal-content" style={modalContentStyle}>
-            <p>Aguardando o(a) outro(a) jogador(a) ficar pronto(a).</p>
+            <p>{t('waiting_for_other_player')}</p>
           </div>
         </div>
       )}
@@ -80,11 +82,11 @@ function Participant() {
       {usernameSet && confederateName && !ready && (
         <div className="modal" style={modalStyle}>
           <div className="modal-content" style={modalContentStyle}>
-            <p>Você está jogando com</p>
+            <p>{t('you_are_playing_with')}</p>
             <p className="h2"><b>{confederateName}</b></p>
-            <p>Clique em “PRONTO(A)!” quando estiver pronto(a) para iniciar o jogo.”</p>
+            <p>{t('click_ready_when_you_are_ready_to_start_the_game')}</p>
             <button className="btn btn-primary btn-narrow" onClick={handleReady}>
-              Pronto(a)!
+              {t('ready')}
             </button>
           </div>
         </div>
@@ -98,8 +100,8 @@ function Participant() {
       )}
       {showGameEndedModal && (
         <Modal>
-          <h2>Muito obrigada por participar!</h2>
-          <p>Por favor, aguarde. A pesquisadora retornará para falar com você dentro de alguns minutos.</p>
+          <h2>{t('thank_you_for_participating')}</h2>
+          <p>{t('please_wait_for_the_researcher')}</p>
         </Modal>)}
     </div>
   );

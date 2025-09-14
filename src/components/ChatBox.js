@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useRef } from "react";
-import socket from "./socket";
-import config from "./config";
+import { useState, useEffect, useRef } from "react";
+import socket from "../socket";
+import { useChimesConfig } from "../context/ChimesConfigContext";
+import { useTranslation } from "react-i18next";
 
 function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef, activityRef, sendButtonRef }) {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [typingUser, setTypingUser] = useState("");
-  const [confederateName, setConfederateName] = useState("Nome do(a) Jogador(a)");
-  const [chimesConfig, setChimesConfig] = useState({
-    messageSent: true,
-    messageReceived: true
-  });
+  const [confederateName, setConfederateName] = useState(t('player_name'));
+  const { chimesConfig } = useChimesConfig();
   const mousePositionRef = useRef({ x: 0, y: 0 });
   const typingTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
+  
 
   useEffect(() => {
     const updateMousePosition = (e) => {
@@ -26,8 +26,9 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
       setTypingUser("");
       typingTimeoutRef.current = null;
       setMessages((prevMessages) => [...prevMessages, msg]);
+      let messageFromOtherUser = isAdmin ? msg.user !== confederateName : msg.user !== currentUser;
 
-      if (msg.user !== currentUser && chimesConfig?.messageReceived) {
+      if (messageFromOtherUser && chimesConfig?.messageReceived) {
         try {
           new Audio("/sounds/message-received.mp3").play(); // Play sound when a message is received
         } catch (error) {
@@ -50,10 +51,6 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
       setMessages([]);
     });
 
-    socket.on("chimes updated", (data) => {
-      setChimesConfig(data);
-    });
-
     return () => {
       window.removeEventListener("mousemove", updateMousePosition);
       socket.off("chat message");
@@ -62,7 +59,7 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
       socket.off("chat cleared");
       socket.off("chimes updated");
     };
-  }, [currentUser, chimesConfig]);
+  }, [currentUser, chimesConfig, confederateName]);
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -149,7 +146,7 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
     <div className="col-md-6">
       <div className="card">
         <div className="card-header">
-          <h3 className="h5 mb-0">Mensagens</h3>
+          <h3 className="h5 mb-0">{t('messages')}</h3>
         </div>
         <div className="card-body custom-scroll"
           style={{
@@ -168,9 +165,9 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
             ))}
           </div>
           <div>
-            <strong ref={activityRef}>Atividade:</strong>{' '}
+            <strong ref={activityRef}>{t('activity')}:</strong>{' '}
             {typingUser && (
-              <nobr className="text-muted">{typingUser} está digitando...</nobr>
+              <nobr className="text-muted">{typingUser} {t('is_typing')}...</nobr>
             )}
             <br></br>
             <p className="info-box">{isAdmin ? confederateName : currentUser}</p>
@@ -182,7 +179,7 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
             <input
               type="text"
               className="form-control me-2"
-              placeholder="Mensagem"
+              placeholder={t('message_placeholder')}
               value={newMessage}
               onChange={(e) => handleTyping(e)}
               onKeyUp={handleKeyPress}
@@ -192,14 +189,14 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
               className="btn btn-primary"
               onClick={handleSend}
               ref={sendButtonRef}>
-              Enviar
+              {t('send_message')}
             </button>
             {isAdmin && (
               <button
                 className="btn btn-warning ms-2"
                 onClick={handleClearChat}
               >
-                Limpar Chat
+                {t('clear_chat')}
               </button>
             )}
           </div>

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import socket from "./socket";
+import socket from "../socket";
 import ChatBox from "./ChatBox";
 import GameBox from "./GameBox";
-import config from "./config";
+import config from "../config";
 import Modal from "./Modal";
-
+import { useTranslation } from "react-i18next";
 function Experimenter() {
   const [confederateName, setConfederateName] = useState("");
   const [gender, setGender] = useState("F");
@@ -22,6 +22,7 @@ function Experimenter() {
   const [currentParticipant, setCurrentParticipant] = useState(null);
   const [showTutorialCompleteModal, setShowTutorialCompleteModal] = useState(false);
   const [numTries, setNumTries] = useState(1);
+  const { t } = useTranslation();
 
   useEffect(() => {
     socket.on("tutorial done", (numTries) => {
@@ -171,7 +172,7 @@ function Experimenter() {
 
   const resolveGame = (gameResolutionType) => {
     if (!teamAnswer && gameResolutionType !== 'TNP') {
-      alert('Por favor, preencha o campo "Resposta da Equipe".');
+      alert(t('please_provide_team_answer'));
       return;
     }
 
@@ -181,27 +182,27 @@ function Experimenter() {
 
   return (
     <div className="container mt-4" style={{ overflow: "hidden" }}>
-      <h1 className="text-center mb-4">Bate-Papo Online de Resolução de Problemas</h1>
+      <h1 className="text-center mb-4">{t('title')}</h1>
 
       <div className="row">
         <ChatBox currentUser={currentParticipant} isAdmin={true} />
         <GameBox isAdmin={true} />
       </div>
       <button className="btn btn-primary" onClick={openGameConfigModal}>
-        Iniciar Jogo
+        {t('start_game')}
       </button>
       <button className="btn btn-warning m-3" onClick={openResolutionModal}>
-        Resolver Jogo
+        {t('resolve_game')}
       </button>
       <button className="btn btn-secondary" onClick={nextProblem}>
-        Próximo Problema
+        {t('next_problem')}
       </button>
 
       {showGameConfigModal && (
         <Modal>
-          <h2 id="modal-title" className="mb-3">Configurações do Jogo</h2>
+          <h2 id="modal-title" className="mb-3">{t('game_configuration')}</h2>
           <label className="d-block mb-3">
-            Gênero Inicial:
+            {t('starting_gender')}:
             <div style={{ display: "flex", alignItems: "center", gap: "20px", padding: "5px", border: "1px solid #ccc", borderRadius: "5px", backgroundColor: "#f9f9f9", marginTop: "5px" }}>
               <label style={{ display: "flex", alignItems: "center", gap: "5px", margin: "0" }}>
                 <input
@@ -211,7 +212,7 @@ function Experimenter() {
                   checked={gender === "F"}
                   onChange={(e) => handleGenderChange(e.target.value)}
                 />
-                Feminino
+                {t('female')}
               </label>
               <label style={{ display: "flex", alignItems: "center", gap: "5px", margin: "0" }}>
                 <input
@@ -221,25 +222,25 @@ function Experimenter() {
                   checked={gender === "M"}
                   onChange={(e) => handleGenderChange(e.target.value)}
                 />
-                Masculino
+                {t('male')}
               </label>
             </div>
           </label>
           <label className="d-block mb-3">
-            Nome do(a) Confederado(a):
+            {t('confederate_name')}:
             <select
               className="form-control mt-2"
               value={confederateName}
               onChange={(e) => setConfederateName(e.target.value)}
             >
               <option value="" disabled>
-                Selecione
+                {t('select_confederate_name')}
               </option>
               {getConfederateOptions()}
             </select>
           </label>
           <label className="d-block mb-3">
-            Pontos por rodada:
+            {t('points_awarded')}:
             <input
               type="number"
               className="form-control"
@@ -248,7 +249,7 @@ function Experimenter() {
             />
           </label>
           <label className="d-block mb-3">
-            Tempo máximo (seconds):
+            {t('max_time_seconds')}:
             <input
               type="number"
               className="form-control"
@@ -257,7 +258,7 @@ function Experimenter() {
             />
           </label>
           <label className="d-block mb-3">
-            Opções de Som:
+            {t('enable_chimes_for')}:
             <div className="checkbox-container">
               <label className="checkbox-label">
                 <input
@@ -266,7 +267,7 @@ function Experimenter() {
                   checked={enableMessageReceivedChimes}
                   onChange={(e) => setEnableMessageReceivedChimes(e.target.checked)}
                 />
-                Mensagem Recebida
+                {t('message_received')}
               </label>
               <label className="checkbox-label">
                 <input
@@ -275,7 +276,7 @@ function Experimenter() {
                   checked={enableMessageSentChimes}
                   onChange={(e) => setEnableMessageSentChimes(e.target.checked)}
                 />
-                Mensagem Enviada
+                {t('message_sent')}
               </label>
               <label className="checkbox-label">
                 <input
@@ -284,16 +285,16 @@ function Experimenter() {
                   checked={enableTimerChimes}
                   onChange={(e) => setEnableTimerChimes(e.target.checked)}
                 />
-                Temporizador
+                {t('timer')}
               </label>
             </div>
           </label>
           <div className="d-flex justify-content-between">
             <button className="btn btn-success" onClick={handleSave}>
-              Iniciar
+              {t('start')}
             </button>
             <button className="btn btn-danger" onClick={closeGameConfigModal}>
-              Cancelar
+              {t('cancel')}
             </button>
           </div>
         </Modal>
@@ -301,9 +302,9 @@ function Experimenter() {
 
       {showResolutionModal && (
         <Modal onClose={closeResolutionModal}>
-          <h2 id="resolution-modal-title" className="mb-3">Resolução do Jogo e Próximo Problema</h2>
+          <h2 id="resolution-modal-title" className="mb-3">{t('resolve_and_next')}</h2>
           <div className="mb-3">
-            <label htmlFor="teamAnswer" className="form-label">Resposta do Time:</label>
+            <label htmlFor="teamAnswer" className="form-label">{t('team_answer')}:</label>
             <input
               type="text"
               className="form-control"
@@ -313,19 +314,19 @@ function Experimenter() {
             />
           </div>
           <div className="d-flex justify-content-between mb-3">
-            <button className="btn btn-success" onClick={() => resolveGame('AP')}>CP</button>
-            <button className="btn btn-warning" onClick={() => resolveGame('ANP')}>CSP</button>
-            <button className="btn btn-primary" onClick={() => resolveGame('DP')}>DP</button>
-            <button className="btn btn-danger" onClick={() => resolveGame('DNP')}>DSP</button>
-            <button className="btn btn-secondary" onClick={() => resolveGame('TNP')}>TSP</button>
+            <button className="btn btn-success" onClick={() => resolveGame('AP')}>{t('AP')}</button>
+            <button className="btn btn-warning" onClick={() => resolveGame('ANP')}>{t('ANP')}</button>
+            <button className="btn btn-primary" onClick={() => resolveGame('DP')}>{t('DP')}</button>
+            <button className="btn btn-danger" onClick={() => resolveGame('DNP')}>{t('DNP')}</button>
+            <button className="btn btn-secondary" onClick={() => resolveGame('TNP')}>{t('TNP')}</button>
           </div>
         </Modal>
       )}
       {showTutorialCompleteModal && (
         <Modal onClose={() => setShowTutorialCompleteModal(false)}>
-          <h2>Tutorial Completo</h2>
-          <p>O usuario completou o tutorial com sucesso.</p>
-          <p>O critério de domínio da tarefa foi atingido na {numTries}ª tentativa.</p>
+          <h2>{t('tutorial_complete')}</h2>
+          <p>{t('the_user_completed_the_tutorial_successfully')}</p>
+          <p>{t('the_task_mastery_criterion_was_achieved_on_the_nth_try', { numTries: numTries })}</p>
         </Modal>
       )}
     </div>
