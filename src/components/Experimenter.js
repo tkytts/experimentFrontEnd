@@ -93,6 +93,7 @@ function Experimenter() {
     if (currentProblem === 4) {
       socket.emit("reset timer");
       socket.emit("stop timer");
+      setCurrentProblem(0);
       setNextConfederate()
       openGameConfigModal();
       socket.emit("block finished");
