@@ -13,7 +13,7 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
   const mousePositionRef = useRef({ x: 0, y: 0 });
   const typingTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
-  
+
   useEffect(() => {
     const updateMousePosition = (e) => {
       mousePositionRef.current = { x: e.clientX, y: e.clientY };
@@ -99,6 +99,17 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
         user: currentUser,
         confederate: confederateName,
         action: "message sent",
+        text: newMessage,
+        timestamp: new Date().toISOString(),
+        x: mousePositionRef.current.x,
+        y: mousePositionRef.current.y,
+      });
+    }
+    else {
+      socket.emit("telemetry event", {
+        user: currentUser,
+        confederate: confederateName,
+        action: "CONFEDERATE MESSAGE",
         text: newMessage,
         timestamp: new Date().toISOString(),
         x: mousePositionRef.current.x,
