@@ -60,7 +60,20 @@ function Experimenter() {
   }, []);
 
   useEffect(() => {
-    // Fetch current user data
+    fetchCurrentUser();
+  }, []);
+
+
+  const openGameConfigModal = () => {
+    setShowGameConfigModal(true);
+
+    if (!confederateName)
+      handleGenderChange(gender);
+  };
+
+  const closeGameConfigModal = () => setShowGameConfigModal(false);
+
+      // Fetch current user data
     const fetchCurrentUser = async () => {
       try {
         const response = await fetch(`${config.serverUrl}/currentUser`);
@@ -73,18 +86,6 @@ function Experimenter() {
         console.error("Error fetching current user data:", error);
       }
     };
-
-    fetchCurrentUser();
-  }, []);
-
-  const openGameConfigModal = () => {
-    setShowGameConfigModal(true);
-
-    if (!confederateName)
-      handleGenderChange(gender);
-  };
-
-  const closeGameConfigModal = () => setShowGameConfigModal(false);
 
   const nextProblem = () => {
     socket.emit("clear answer");
@@ -143,6 +144,8 @@ function Experimenter() {
   };
 
   const handleSave = () => {
+    fetchCurrentUser();
+    
     let confederateBlock;
     if (gender === "F") {
       confederateBlock = confederatesFemaleStart.findIndex(confederate => confederate.name === confederateName);
