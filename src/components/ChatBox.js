@@ -107,8 +107,8 @@ function ChatBox({ currentUser, isAdmin, messageRef, chatRef, confederateNameRef
     }
     else {
       socket.emit("telemetry event", {
-        user: currentUser,
-        confederate: confederateName,
+        user: confederateName,
+        confederate: currentUser,
         action: "CONFEDERATE MESSAGE",
         text: newMessage,
         timestamp: new Date().toISOString(),
