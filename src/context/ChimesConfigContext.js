@@ -1,14 +1,19 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import socket from "../socket";
 
-const ChimesConfigContext = createContext();
+const DEFAULT_CHIMES = {
+  messageSent: true,
+  messageReceived: true,
+  timer: true,
+};
+
+const ChimesConfigContext = createContext({
+  chimesConfig: DEFAULT_CHIMES,
+  updateChimesConfig: () => {},
+});
 
 export function ChimesConfigProvider({ children }) {
-  const [chimesConfig, setChimesConfig] = useState({
-    messageSent: true,
-    messageReceived: true,
-    timer: true,
-  });
+  const [chimesConfig, setChimesConfig] = useState(DEFAULT_CHIMES);
 
   useEffect(() => {
     socket.emit("get chimes");
@@ -18,7 +23,6 @@ export function ChimesConfigProvider({ children }) {
     return () => socket.off("chimes updated");
   }, []);
 
-  // Optionally, provide a setter to update config and emit to server
   const updateChimesConfig = (newConfig) => {
     setChimesConfig(newConfig);
     socket.emit("set chimes", newConfig);
@@ -32,5 +36,5 @@ export function ChimesConfigProvider({ children }) {
 }
 
 export function useChimesConfig() {
-  return useContext(ChimesConfigContext);
+  return useContext(ChimesConfigContext) || { chimesConfig: DEFAULT_CHIMES, updateChimesConfig: () => {} };
 }
